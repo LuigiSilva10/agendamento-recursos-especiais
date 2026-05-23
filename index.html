@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento de Recursos Especiais - LDC</title>
+    <!-- Favicon para evitar erro 404 no console -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
+    <!-- Tailwind CSS (via CDN) -->
+    <script>
+        // Silencia o aviso de "não usar em produção" do Tailwind CDN
+        const originalWarn = console.warn;
+        console.warn = (...args) => {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+            originalWarn.apply(console, args);
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca Howler.js para efeitos sonoros -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: { 400: '#34d399', 500: '#10b981', 600: '#059669' },
+                        zinc: { 800: '#27272a', 900: '#18181b', 950: '#09090b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    </style>
+    <!-- Phosphor Icons (via CDN) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Chart.js (via CDN) para os gráficos do Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #09090b;
+            color: #d4d4d8;
+            font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        }
+        .tab-content { display: none; height: 100%; width: 100%; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        
+        /* Especial para o Tab de Agendamento centralizado */
+        #tab-new.active { display: flex; flex-direction: column; align-items: center; }
+        
+        .step-content { display: none; }
+        .step-content.active { display: block; animation: slideInX 0.3s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInX {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        main {
+            scrollbar-gutter: stable;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #18181b; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 50;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* Corrigir ícones nativos de input date/time no tema escuro */
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        /* Animação Imersiva de Seleção */
+        @keyframes shine {
+            0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateX(150%) skewX(-25deg); opacity: 0; }
+        }
+        .shine-element {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 0.7s ease-out forwards;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center justify-center w-8 h-8 rounded bg-emerald-500/10 text-emerald-500">
+                    <i class="ph-fill ph-hard-hat text-xl"></i>
+                </div>
+                <h1 class="text-zinc-100 font-bold tracking-wide text-2xl uppercase hidden sm:block">
+                    Agendamento de Recursos Especiais - LDC
+                </h1>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+        
+        <!-- =======================
+             DASHBOARD TAB
+        ======================== -->
+        <div id="tab-dashboard" class="tab-content">
+            <!-- Tela de Bloqueio por Senha -->
+            <div id="dashboard-lock" class="flex flex-col items-center justify-center h-full text-center">
+                <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mb-6 text-zinc-500">
+                    <i class="ph-fill ph-lock-key text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-zinc-100 mb-2">Acesso Restrito</h3>
+                <p class="text-zinc-400 text-sm mb-8 px-4">O painel de indicadores é visível apenas para usuários autorizados.</p>
+                <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs px-4">
+                    <input id="dash-pass" type="password" placeholder="Digite a senha" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                    <button id="btn-unlock-dash" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg font-bold transition-all">Entrar</button>
+                </div>
+                <p id="pass-error" class="text-red-400 text-xs mt-6 hidden">Senha incorreta. Verifique e tente novamente.</p>
+            </div>
+
+            <div id="dashboard-content" class="hidden space-y-6">
+            <!-- Métricas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
+                    <div class="p-3 rounded-lg bg-zinc-950 text-emerald-500"><i class="ph-fill ph-clock text-2xl"></i></div>
+                    <div>
+                        <p class="text-zinc-400 text-sm font-medium">Total Horas</p>
+                        <p class="text-2xl font-bold text-zinc-100">1.240,5h</p>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
+                    <div class="p-3 rounded-lg bg-zinc-950 text-zinc-300"><i class="ph-fill ph-activity text-2xl"></i></div>
+                    <div>
+                        <p class="text-zinc-400 text-sm font-medium">Horas Normais</p>
+                        <p class="text-2xl font-bold text-zinc-100">980,0h</p>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
+                    <div class="p-3 rounded-lg bg-zinc-950 text-amber-500"><i class="ph-fill ph-file-text text-2xl"></i></div>
+                    <div>
+                        <p class="text-zinc-400 text-sm font-medium">Horas Extras</p>
+                        <p class="text-2xl font-bold text-zinc-100">260,5h</p>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
+                    <div class="p-3 rounded-lg bg-zinc-950 text-zinc-400"><i class="ph-fill ph-list-numbers text-2xl"></i></div>
+                    <div>
+                        <p class="text-zinc-400 text-sm font-medium">Registros Listados</p>
+                        <p class="text-2xl font-bold text-zinc-100">142</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Tendência -->
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
+                    <h3 class="text-lg font-medium text-zinc-100 mb-6">Análise de Tendência Diária</h3>
+                    <div class="h-72 relative">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <!-- Ranking -->
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
+                    <h3 class="text-lg font-medium text-zinc-100 mb-6">Ranking de Solicitantes</h3>
+                    <div class="h-72 relative">
+                        <canvas id="rankingChart"></canvas>
+                    </div>
+                </div>
+                <!-- Equipamentos -->
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl lg:col-span-2 flex flex-col md:flex-row gap-8 items-center cursor-default">
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-lg font-medium text-zinc-100 mb-2">Distribuição Operacional</h3>
+                        <p class="text-sm text-zinc-400 mb-6">Proporção de uso por equipamento.</p>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-emerald-500"></div><span class="text-zinc-300 font-medium">PTA 1</span></div><span class="text-zinc-100 font-bold">35%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-amber-500"></div><span class="text-zinc-300 font-medium">PTA 2</span></div><span class="text-zinc-100 font-bold">25%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span class="text-zinc-300 font-medium">Munck</span></div><span class="text-zinc-100 font-bold">20%</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-zinc-500"></div><span class="text-zinc-300 font-medium">Guindaste</span></div><span class="text-zinc-100 font-bold">20%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 h-72 relative">
+                         <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- =======================
+             NOVA SOLICITAÇÃO TAB
+        ======================== -->
+        <div id="tab-new" class="tab-content active">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl w-full max-w-3xl my-4">
+                <!-- Cabeçalho (Passos e Barras de Progresso) -->
+                <div class="mb-6">
+                    <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Passo <span id="current-step-text">1</span> de 4</p>
+                    <div class="w-full bg-zinc-950 rounded-full h-1.5 mb-6">
+                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <!-- Áreas do Formulário Wizard -->
+                <div>
+                    
+                    <!-- Passo 1: Seleção de Equipamento (Agora o Primeiro) -->
+                    <div id="step-1" class="step-content active">
+                        <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
+                        <p class="text-zinc-400 text-sm mb-8">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="equipment-grid">
+                            <!-- Cards gerados pelo JavaScript com cores vivas e animação -->
+                        </div>
+                    </div>
+
+                    <!-- Passo 2: Data -->
+                    <div id="step-2" class="step-content">
+                        <h3 class="text-xl font-medium text-zinc-100 mb-2">Para qual dia?</h3>
+                        <p class="text-zinc-400 text-sm mb-6">Insira a data do agendamento.</p>
+                        
+                        <div class="space-y-4 max-w-sm">
+                            <label for="date-input" class="block text-sm font-medium text-zinc-400">Data do Agendamento</label>
+                            <input id="date-input" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
+                            <p id="date-warning" class="text-amber-500 text-sm hidden items-center gap-1"><i class="ph-fill ph-warning"></i> Data inválida para o equipamento.</p>
+                        </div>
+                    </div>
+
+                    <!-- Passo 3: Horários -->
+                    <div id="step-3" class="step-content">
+                        <h3 class="text-xl font-medium text-zinc-100 mb-2">Em qual horário?</h3>
+                        <p class="text-zinc-400 text-sm mb-6">Determine o intervalo de uso do recurso.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg">
+                            <div class="space-y-4">
+                                <label for="time-start" class="block text-sm font-medium text-zinc-400">Horário de Retirada</label>
+                                <input id="time-start" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
+                            </div>
+                            <div class="space-y-4">
+                                <label for="time-end" class="block text-sm font-medium text-zinc-400">Horário de Devolução</label>
+                                <input id="time-end" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
+                            </div>
+                        </div>
+                        <p id="time-warning" class="text-red-400 text-sm hidden items-center gap-1.5 mt-4"><i class="ph-fill ph-warning-circle"></i> Devolução não pode ser anterior à retirada.</p>
+                    </div>
+
+                    <!-- Passo 4: Identificação e Confirmação -->
+                    <div id="step-4" class="step-content">
+                        <h3 class="text-xl font-medium text-zinc-100 mb-6">Quem está solicitando?</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mb-10">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-zinc-400">Nome Completo</label>
+                                <input id="employee-name" type="text" placeholder="Ex: João da Silva" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-zinc-400">Setor / Matrícula</label>
+                                <input id="employee-sector" type="text" placeholder="Ex: Manutenção / 12345" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                            </div>
+                        </div>
+                        
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-2xl text-left">
+                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Funcionário</p><p id="res-name" class="text-zinc-100 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Setor / Matrícula</p><p id="res-sector" class="text-zinc-100 font-medium">-</p></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Equipamento</p><p id="res-eqp" class="text-emerald-400 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Data</p><p id="res-date" class="text-zinc-100 font-medium">-</p></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Retirada</p><p id="res-start" class="text-zinc-100 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Devolução</p><p id="res-end" class="text-zinc-100 font-medium">-</p></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-2xl mt-6">
+                            <i class="ph-fill ph-warning text-xl shrink-0"></i>
+                            <div class="text-sm">
+                                <p class="font-semibold mb-1">Aviso</p>
+                                <p>Ao confirmar, o agendamento será registrado no sistema e o equipamento ficará reservado no período selecionado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Navegação -->
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-zinc-800">
+                    <button id="btn-prev" class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-zinc-300 hover:bg-zinc-800 transition-colors invisible">
+                        <i class="ph ph-arrow-left"></i> Voltar
+                    </button>
+                    
+                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors" disabled>
+                        Avançar <i class="ph ph-arrow-right"></i>
+                    </button>
+
+                    <button id="btn-finish" class="hidden items-center gap-2 px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all">
+                        Confirmar Ação <i class="ph-fill ph-check-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =======================
+             IMPORTAÇÃO TAB
+        ======================== -->
+        <div id="tab-import" class="tab-content">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 shadow-sm flex flex-col items-center justify-center min-h-[400px]" id="drop-zone">
+                <div id="upload-state" class="w-full max-w-lg border-2 border-dashed border-zinc-700 bg-zinc-950 rounded-2xl p-12 flex flex-col items-center justify-center transition-colors text-center hover:border-zinc-600 hover:bg-zinc-900/50">
+                    <div class="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-6 text-zinc-400">
+                        <i class="ph ph-cloud-arrow-up text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-zinc-100 mb-2">Solte a planilha aqui</h3>
+                    <p class="text-zinc-500 text-sm mb-8">Arraste e solte arquivos .xlsx, .xls ou .csv</p>
+                    
+                    <label class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 px-6 py-2.5 rounded-lg cursor-pointer transition-colors text-sm font-medium">
+                        Procurar Arquivo
+                        <input type="file" class="hidden" id="file-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                    </label>
+                </div>
+
+                <div id="file-detail-state" class="hidden w-full max-w-lg bg-zinc-950 border border-emerald-500/30 rounded-2xl p-8 text-center animate-in zoom-in-95 duration-300">
+                    <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto mb-6">
+                        <i class="ph-fill ph-file-csv text-3xl"></i>
+                    </div>
+                    <h3 id="filename-display" class="text-lg font-medium text-zinc-100 mb-2">arquivo.xlsx</h3>
+                    <p class="text-zinc-500 text-xs mb-8">Pronto para processamento nativo</p>
+                    <div class="flex gap-4 justify-center">
+                        <button id="btn-cancel-file" class="px-5 py-2 rounded-lg font-medium text-zinc-300 hover:bg-zinc-800 transition-colors">Cancelar</button>
+                        <button id="btn-process-file" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors">Processar Dados</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal / Toast de Notificação -->
+    <div id="toastMessage" class="toast flex items-center gap-3 bg-zinc-800 border border-zinc-700 shadow-2xl rounded-xl p-4 text-zinc-100 max-w-sm w-full mx-4">
+        <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-full shrink-0">
+            <i class="ph-fill ph-check-circle text-2xl"></i>
+        </div>
+        <div>
+            <p class="font-medium" id="toast-title">Ação Realizada!</p>
+            <p class="text-sm text-zinc-400" id="toast-desc">Concluído com sucesso.</p>
+        </div>
+    </div>
+
+    <!-- Script Principal da Aplicação Vanilla -->
+    <script>
+        // ------------------
+        // Configuração do Efeito Sonoro (Click Pop)
+        // ------------------
+        const clickSfx = new Howl({
+            src: ['data:audio/wav;base64,UklGRpAWAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YVwWAAD//wEAAQAAAAAAAP//AQABAAAAAA=='],
+            volume: 1.0
+        });
+
+        // ------------------
+        // Navegação em Abas
+        // ------------------
+        const tabContents = document.querySelectorAll('.tab-content');
+        const navBtns = document.querySelectorAll('.nav-btn');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navBtns.forEach(b => {
+                    b.classList.remove('bg-zinc-800', 'text-zinc-100', 'bg-emerald-500/15', 'text-emerald-400');
+                    b.classList.add('text-zinc-400');
+                    b.classList.remove('active');
+                });
+                
+                const target = btn.getAttribute('data-target');
+                if(target === 'tab-new'){
+                    btn.classList.add('bg-emerald-500/15', 'text-emerald-400');
+                } else {
+                    btn.classList.add('bg-zinc-800', 'text-zinc-100');
+                }
+                btn.classList.remove('text-zinc-400');
+
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === target) {
+                        content.classList.add('active');
+                        // Se abrir o dashboard, garanta que os gráficos renderizem
+                        if(target === 'tab-dashboard') initCharts();
+                    }
+                });
+            });
+        });
+
+        // -----------------------
+        // Estrutura de Lógica do Wizard
+        // -----------------------
+        const equipments = [
+            { id: 'pta1', name: 'PTA 1', icon: 'ph-elevator', advance: false, color: 'emerald' },
+            { id: 'pta2', name: 'PTA 2', icon: 'ph-elevator', advance: false, color: 'sky' },
+            { id: 'munck', name: 'C. Munck', icon: 'ph-truck', advance: false, color: 'orange' },
+            { id: 'guindaste', name: 'Guindaste', icon: 'ph-crane', advance: true, color: 'indigo' },
+        ];
+
+        let state = {
+            step: 1,
+            date: '',
+            timeStart: '',
+            timeEnd: '',
+            name: '',
+            sector: '',
+            eqp: null
+        };
+
+        const dateInput = document.getElementById('date-input');
+        const timeStart = document.getElementById('time-start');
+        const timeEnd = document.getElementById('time-end');
+        const empName = document.getElementById('employee-name');
+        const empSector = document.getElementById('employee-sector');
+        
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnFinish = document.getElementById('btn-finish');
+        const stepTexts = document.getElementById('current-step-text');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const warningDate = document.getElementById('date-warning');
+        const warningTime = document.getElementById('time-warning');
+
+        // Configuração inicial de data
+        const pad = (n) => n < 10 ? '0'+n : n;
+        const getTodayStr = () => {
+             const d = new Date();
+             return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        }
+        const getTomorrowStr = () => {
+             const d = new Date();
+             d.setDate(d.getDate() + 1);
+             return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        }
+
+        dateInput.min = getTodayStr();
+
+        // Renderizar dinamicamente os cards de equipamento
+        const grid = document.getElementById('equipment-grid');
+        function renderEquipments() {
+            grid.innerHTML = equipments.map(eqp => {
+                const isSelected = state.eqp === eqp.id;
+                const vividColor = {
+                    emerald: 'bg-emerald-500',
+                    sky: 'bg-sky-500',
+                    orange: 'bg-orange-500',
+                    indigo: 'bg-indigo-500'
+                }[eqp.color];
+
+                const borderGlow = {
+                    emerald: 'border-emerald-500/50 shadow-emerald-500/20 ring-emerald-500/10',
+                    sky: 'border-sky-500/50 shadow-sky-500/20 ring-sky-500/10',
+                    orange: 'border-orange-500/50 shadow-orange-500/20 ring-orange-500/10',
+                    indigo: 'border-indigo-500/50 shadow-indigo-500/20 ring-indigo-500/10'
+                }[eqp.color];
+
+                return `
+                    <button type="button" onclick="selectEqp('${eqp.id}')"
+                        class="relative flex flex-col items-center justify-center p-5 rounded-[2rem] border-2 text-center transition-all duration-500 overflow-hidden
+                        ${isSelected ? `bg-zinc-900 ${borderGlow} scale-[1.02] shadow-2xl ring-4` : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600 hover:scale-105 active:scale-95'}">
+                        
+                        ${isSelected ? '<div class="shine-element"></div>' : ''}
+
+                        <div class="w-16 h-16 rounded-2xl mb-4 flex items-center justify-center ${isSelected ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500'} transition-all duration-500 ease-out">
+                            <i class="ph ${eqp.icon} text-3xl"></i>
+                        </div>
+                        
+                        <div class="flex-1 z-10">
+                            <span class="block text-xl font-black tracking-tight ${isSelected ? 'text-white' : 'text-zinc-500'} transition-colors duration-500">${eqp.name}</span>
+                            ${eqp.advance 
+                                ? `<span class="text-[9px] ${isSelected ? 'text-orange-500' : 'text-zinc-500'} uppercase tracking-tighter mt-2 font-black block transition-colors duration-500">Mín. 1 dia de antecedência para reservar</span>` 
+                                : `<span class="text-[9px] ${isSelected ? 'text-emerald-500' : 'text-zinc-500'} uppercase tracking-tighter mt-2 font-black block transition-colors duration-500">Sem limite mínimo para reservar</span>`
+                            }
+                        </div>
+                        
+                        ${isSelected ? `
+                            <div class="absolute -top-2 -right-2 w-12 h-12 ${vividColor} rounded-bl-[2rem] flex items-center justify-center border-t-2 border-r-2 border-white/20">
+                                <i class="ph-bold ph-check text-white text-sm"></i>
+                            </div>
+                        ` : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Função global exposta para o onclick nos cards
+        window.selectEqp = function(id) {
+            // Previne processamento e sons repetitivos ao clicar no mesmo item já selecionado
+            if (state.eqp === id) return;
+
+            state.eqp = id;
+            
+            // Tocar efeito sonoro de clique
+            clickSfx.play();
+            renderEquipments();
+            
+            // Regra de Negócio: Guindaste
+            const eqpInfo = equipments.find(e => e.id === id);
+            if(eqpInfo.advance) {
+                dateInput.min = getTomorrowStr();
+                // Limpa a data se for inferior à exigência
+                if(dateInput.value && dateInput.value < dateInput.min) {
+                    dateInput.value = '';
+                }
+            } else {
+                dateInput.min = getTodayStr();
+            }
+            validateStep();
+        };
+
+        // Regras de bloqueio de botão
+        function validateStep() {
+            let isValid = false;
+            if (state.step === 1) {
+                isValid = state.eqp !== null;
+            } else if (state.step === 2) {
+                isValid = dateInput.value !== '' && dateInput.value >= dateInput.min;
+                warningDate.style.display = (dateInput.value !== '' && dateInput.value < dateInput.min) ? 'flex' : 'none';
+            } else if (state.step === 3) {
+                isValid = timeStart.value !== '' && timeEnd.value !== '' && timeEnd.value >= timeStart.value;
+                warningTime.style.display = (timeStart.value !== '' && timeEnd.value !== '' && timeEnd.value < timeStart.value) ? 'flex' : 'none';
+            } else {
+                isValid = true;
+            }
+            btnNext.disabled = !isValid;
+        }
+
+        [dateInput, timeStart, timeEnd, empName, empSector].forEach(input => {
+            input.addEventListener('input', validateStep);
+        });
+
+        // Alternância de conteúdo dos passos
+        function updateStepUI() {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${state.step}`).classList.add('active');
+            
+            stepTexts.textContent = state.step;
+            progressBar.style.width = `${(state.step / 4) * 100}%`;
+            
+            btnPrev.classList.toggle('invisible', state.step === 1);
+            
+            if (state.step === 4) {
+                btnNext.classList.add('hidden');
+                btnNext.classList.remove('flex');
+                btnFinish.classList.remove('hidden');
+                btnFinish.classList.add('flex');
+                updateSummary();
+            } else {
+                btnNext.classList.remove('hidden');
+                btnNext.classList.add('flex');
+                btnFinish.classList.add('hidden');
+                btnFinish.classList.remove('flex');
+            }
+            validateStep();
+        }
+
+        // Escrever sumário no último passo
+        function updateSummary() {
+            const eqpObj = equipments.find(e => e.id === state.eqp);
+            document.getElementById('res-name').textContent = empName.value;
+            document.getElementById('res-sector').textContent = empSector.value;
+            document.getElementById('res-eqp').textContent = eqpObj ? eqpObj.name : '-';
+            
+            if(dateInput.value) {
+                const [y,m,d] = dateInput.value.split('-');
+                document.getElementById('res-date').textContent = `${d}/${m}/${y}`;
+            }
+            document.getElementById('res-start').textContent = timeStart.value;
+            document.getElementById('res-end').textContent = timeEnd.value;
+        }
+
+        btnNext.addEventListener('click', () => {
+            if(state.step < 4) { state.step++; updateStepUI(); }
+        });
+        btnPrev.addEventListener('click', () => {
+            if(state.step > 1) { state.step--; updateStepUI(); }
+        });
+
+        // ------------------
+        // Toast UI General
+        // ------------------
+        function showToast(title, desc) {
+            const t = document.getElementById('toastMessage');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-desc').textContent = desc;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 4000);
+        }
+
+        // Simulação de Submissão Backend
+        btnFinish.addEventListener('click', () => {
+            showToast('Solicitação Registrada!', 'O equipamento foi agendado com sucesso.');
+            
+            // Limpa Formulário
+            state.step = 1;
+            state.eqp = null;
+            dateInput.value = ''; timeStart.value = ''; timeEnd.value = '';
+            empName.value = ''; empSector.value = ''; 
+            
+            dateInput.min = getTodayStr(); // Reseta regra de bloqueio D+1
+            
+            renderEquipments();
+            updateStepUI();
+            
+            // Retorna ao Menu Inicial Após 1,5 segundos
+            setTimeout(() => {
+                document.querySelector('[data-target="tab-dashboard"]').click();
+            }, 1500);
+        });
+
+        // Bind Inicial
+        renderEquipments();
+        validateStep();
+
+        // ------------------
+        // Aba de Importação (Lógica Visual)
+        // ------------------
+        const dropZone = document.getElementById('drop-zone');
+        const uploadState = document.getElementById('upload-state');
+        const fileDetailState = document.getElementById('file-detail-state');
+        const fileInput = document.getElementById('file-input');
+        const filenameDisplay = document.getElementById('filename-display');
+        const btnCancelFile = document.getElementById('btn-cancel-file');
+        const btnProcessFile = document.getElementById('btn-process-file');
+
+        function handleFile(file) {
+            if(file) {
+                filenameDisplay.textContent = file.name;
+                uploadState.classList.add('hidden');
+                uploadState.classList.remove('flex');
+                fileDetailState.classList.remove('hidden');
+            }
+        }
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadState.classList.add('border-emerald-500', 'bg-emerald-500/5');
+            uploadState.classList.remove('border-zinc-700', 'bg-zinc-950');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadState.classList.remove('border-emerald-500', 'bg-emerald-500/5');
+            uploadState.classList.add('border-zinc-700', 'bg-zinc-950');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadState.classList.remove('border-emerald-500', 'bg-emerald-500/5');
+            uploadState.classList.add('border-zinc-700', 'bg-zinc-950');
+            if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        btnCancelFile.addEventListener('click', () => {
+            fileInput.value = '';
+            uploadState.classList.remove('hidden');
+            uploadState.classList.add('flex');
+            fileDetailState.classList.add('hidden');
+        });
+
+        btnProcessFile.addEventListener('click', () => {
+            showToast('Planilha Importada!', 'Os dados foram atualizados e mesclados com sucesso.');
+            btnCancelFile.click();
+            setTimeout(() => {
+                document.querySelector('[data-target="tab-dashboard"]').click();
+            }, 1000);
+        });
+
+        // ------------------
+        // Inicialização de Gráficos (Chart.js Vanilla)
+        // ------------------
+        Chart.defaults.color = '#a1a1aa';
+        Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
+        let chartsInitialized = false;
+
+        function initCharts() {
+            if(chartsInitialized) return;
+            chartsInitialized = true;
+
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
+                    datasets: [{
+                        label: 'Horas Trabalhadas',
+                        data: [12, 18, 14, 22, 16, 26, 20],
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#18181b', titleColor: '#f4f4f5', padding: 12, cornerRadius: 8 } },
+                    scales: {
+                        y: { grid: { color: '#27272a' }, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
+                }
+            });
+
+            const rankCtx = document.getElementById('rankingChart').getContext('2d');
+            new Chart(rankCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['João Silva', 'Carlos Alves', 'Miguel Souza', 'Ana Costa', 'Lucas Lima'],
+                    datasets: [{
+                        data: [145, 120, 98, 85, 60],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4,
+                        indexAxis: 'y' // Torna o gráfico horizontal
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#27272a' }, border: { display: false } },
+                        y: { grid: { display: false }, border: { display: false } }
+                    }
+                }
+            });
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['PTA 1', 'PTA 2', 'C. Munck', 'Guindaste'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#71717a'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Define o tamanho do anel interno
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // Iniciar os recursos gráficos se a primeira aba for a inicial
+        initCharts();
+
+    </script>
+</body>
+</html>
