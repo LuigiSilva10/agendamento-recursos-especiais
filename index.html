@@ -38,6 +38,14 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Chart.js (via CDN) para os gráficos do Dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr (Data Picker Moderno) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+    <!-- FullCalendar para o HUD de Ocupação -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
     <style>
         body {
             background-color: #09090b;
@@ -48,10 +56,11 @@
         .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
         
         /* Especial para o Tab de Agendamento centralizado */
-        #tab-new.active { display: flex; flex-direction: column; align-items: center; }
+        #tab-new.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         
         .step-content { display: none; }
         .step-content.active { display: block; animation: slideInX 0.3s ease-in-out; }
+        #step-2.active { display: flex; flex-direction: column; width: 100%; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -109,6 +118,60 @@
             animation: shine 0.7s ease-out forwards;
             pointer-events: none;
         }
+
+        /* Customização Flatpickr para Tema Dark/Zinc */
+        .flatpickr-calendar {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-family: inherit !important;
+            width: 800px !important;
+        }
+        .flatpickr-months, .flatpickr-innerContainer, .flatpickr-month { background: transparent !important; }
+        .flatpickr-day { color: #d4d4d8 !important; border-radius: 8px !important; }
+        .flatpickr-day.today { border-color: #10b981 !important; color: #10b981 !important; }
+        .flatpickr-day.flatpickr-disabled { opacity: 0.2 !important; }
+        .flatpickr-day.selected { 
+            background: #10b981 !important; 
+            border-color: #10b981 !important; 
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .flatpickr-day:hover { background: #18181b !important; }
+        .flatpickr-day.flatpickr-disabled { color: #27272a !important; }
+        .flatpickr-months .flatpickr-month, 
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-weekday {
+            color: #f4f4f5 !important;
+            fill: #f4f4f5 !important;
+            font-weight: 700 !important;
+        }
+        .flatpickr-innerContainer { padding: 10px; }
+        .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month {
+            fill: #a1a1aa !important;
+        }
+        /* Customização FullCalendar HUD */
+        .fc { --fc-border-color: #27272a; --fc-today-bg-color: rgba(16, 185, 129, 0.05); font-size: 11px; }
+        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #18181b !important; }
+        .fc .fc-timegrid-slot { height: 2.2em !important; }
+        .fc-v-event { background-color: #10b981 !important; border: none !important; border-left: 3px solid #059669 !important; }
+        .fc-event-title { font-weight: 700; }
+
+        /* Slots de Horário */
+        .time-slot-btn.active {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Ajustes para a Agenda Mensal */
+        .fc .fc-daygrid-day.fc-day-today { background-color: rgba(16, 185, 129, 0.1) !important; }
+        .fc .fc-button-primary { background-color: #27272a; border-color: #3f3f46; color: #d4d4d8; text-transform: uppercase; font-size: 10px; font-weight: 800; }
+        .fc .fc-button-primary:hover { background-color: #3f3f46; }
+        .fc .fc-button-primary:disabled { background-color: #18181b; opacity: 0.5; }
+        .fc-daygrid-event { border-radius: 4px; padding: 2px 4px; font-size: 10px; }
+        .fc-day-selected { background-color: rgba(16, 185, 129, 0.2) !important; border: 2px solid #10b981 !important; }
+
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -127,7 +190,7 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+    <main class="flex-1 overflow-hidden p-4 md:p-8 relative">
         
         <!-- =======================
              DASHBOARD TAB
@@ -228,63 +291,84 @@
              NOVA SOLICITAÇÃO TAB
         ======================== -->
         <div id="tab-new" class="tab-content active">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl w-full max-w-3xl my-4">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl w-full max-w-[1500px] h-[85vh] max-h-[850px] flex flex-col">
                 <!-- Cabeçalho (Passos e Barras de Progresso) -->
                 <div class="mb-6">
                     <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Passo <span id="current-step-text">1</span> de 4</p>
                     <div class="w-full bg-zinc-950 rounded-full h-1.5 mb-6">
-                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 33%"></div>
                     </div>
                 </div>
 
                 <!-- Áreas do Formulário Wizard -->
-                <div>
+                <div class="flex-1 overflow-y-auto flex flex-col">
                     
                     <!-- Passo 1: Seleção de Equipamento (Agora o Primeiro) -->
-                    <div id="step-1" class="step-content active">
+                    <div id="step-1" class="step-content active max-w-6xl mx-auto w-full pt-4 md:pt-10">
                         <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
-                        <p class="text-zinc-400 text-sm mb-8">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                        <p class="text-zinc-400 text-sm mb-4 md:mb-8">Selecione uma das opções abaixo para iniciar o agendamento.</p>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="equipment-grid">
                             <!-- Cards gerados pelo JavaScript com cores vivas e animação -->
                         </div>
                     </div>
 
-                    <!-- Passo 2: Data -->
+                    <!-- Passo 2: Seleção de Data (Novo Formato de Cards) -->
                     <div id="step-2" class="step-content">
-                        <h3 class="text-xl font-medium text-zinc-100 mb-2">Para qual dia?</h3>
-                        <p class="text-zinc-400 text-sm mb-6">Insira a data do agendamento.</p>
-                        
-                        <div class="space-y-4 max-w-sm">
-                            <label for="date-input" class="block text-sm font-medium text-zinc-400">Data do Agendamento</label>
-                            <input id="date-input" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
-                            <p id="date-warning" class="text-amber-500 text-sm hidden items-center gap-1"><i class="ph-fill ph-warning"></i> Data inválida para o equipamento.</p>
+                        <!-- Cabeçalho Fixo (Título, Navegação e Dias da Semana) -->
+                        <div class="sticky top-0 bg-zinc-900 z-20 pt-4 md:pt-10 pb-4 shadow-md">
+                            <div class="w-full px-4 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-6">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-zinc-100 mb-2">Quando você precisa?</h3>
+                                    <p class="text-zinc-400 text-sm">Navegue pelos meses e selecione o dia ideal.</p>
+                                </div>
+                                <!-- Navegação do Calendário -->
+                                <div class="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800 self-center md:self-auto">
+                                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                        <i class="ph-bold ph-caret-left"></i>
+                                    </button>
+                                    <button onclick="goToToday()" class="px-2 py-1 text-[10px] font-black uppercase tracking-tighter bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-all">
+                                        Hoje
+                                    </button>
+                                    <span id="calendar-month-year" class="px-4 font-bold text-zinc-100 min-w-[160px] text-center capitalize"></span>
+                                    <button onclick="changeMonth(1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                        <i class="ph-bold ph-caret-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Cabeçalho de Dias da Semana (Também Fixo) -->
+                            <div class="max-w-4xl mx-auto w-full px-4 grid grid-cols-7 text-center text-[10px] uppercase font-black tracking-widest text-zinc-500">
+                                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                            </div>
                         </div>
+
+                        <div class="max-w-4xl mx-auto w-full px-4">
+                            <!-- Grid do Calendário -->
+                            <div id="calendar-grid" class="grid grid-cols-7 gap-2 pb-10 mt-4">
+                                <!-- Dias gerados via JS -->
+                            </div>
+                        </div>
+
+                        <input id="date-input" type="hidden" />
                     </div>
 
-                    <!-- Passo 3: Horários -->
-                    <div id="step-3" class="step-content">
-                        <h3 class="text-xl font-medium text-zinc-100 mb-2">Em qual horário?</h3>
-                        <p class="text-zinc-400 text-sm mb-6">Determine o intervalo de uso do recurso.</p>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg">
-                            <div class="space-y-4">
-                                <label for="time-start" class="block text-sm font-medium text-zinc-400">Horário de Retirada</label>
-                                <input id="time-start" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
-                            </div>
-                            <div class="space-y-4">
-                                <label for="time-end" class="block text-sm font-medium text-zinc-400">Horário de Devolução</label>
-                                <input id="time-end" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 [color-scheme:dark]" />
-                            </div>
+                    <!-- Passo 3: Turnos -->
+                    <div id="step-3" class="step-content pt-4 md:pt-10">
+                        <div class="max-w-4xl mx-auto w-full mb-8">
+                            <h3 class="text-2xl font-bold text-zinc-100 mb-2">Escolha o horário</h3>
+                            <p id="selected-day-label" class="text-emerald-500 font-bold text-xs uppercase tracking-widest">Selecione um período nos cards abaixo</p>
                         </div>
-                        <p id="time-warning" class="text-red-400 text-sm hidden items-center gap-1.5 mt-4"><i class="ph-fill ph-warning-circle"></i> Devolução não pode ser anterior à retirada.</p>
+                        <div id="time-cards-container" class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                            <!-- Cards de horário gerados dinamicamente -->
+                        </div>
+                        <p id="date-warning" class="text-amber-500 text-sm mt-4 hidden items-center justify-center gap-1"><i class="ph-fill ph-warning"></i> Data indisponível para o equipamento selecionado.</p>
                     </div>
 
                     <!-- Passo 4: Identificação e Confirmação -->
-                    <div id="step-4" class="step-content">
+                    <div id="step-4" class="step-content pt-4 md:pt-10">
                         <h3 class="text-xl font-medium text-zinc-100 mb-6">Quem está solicitando?</h3>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mb-10">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-10">
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-zinc-400">Nome Completo</label>
                                 <input id="employee-name" type="text" placeholder="Ex: João da Silva" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
@@ -295,7 +379,7 @@
                             </div>
                         </div>
                         
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-2xl text-left">
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-4xl text-left">
                             <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
                                 <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Funcionário</p><p id="res-name" class="text-zinc-100 font-medium">-</p></div>
                                 <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Setor / Matrícula</p><p id="res-sector" class="text-zinc-100 font-medium">-</p></div>
@@ -310,7 +394,7 @@
                             </div>
                         </div>
                         
-                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-2xl mt-6">
+                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-4xl mt-6">
                             <i class="ph-fill ph-warning text-xl shrink-0"></i>
                             <div class="text-sm">
                                 <p class="font-semibold mb-1">Aviso</p>
@@ -326,7 +410,7 @@
                         <i class="ph ph-arrow-left"></i> Voltar
                     </button>
                     
-                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors" disabled>
+                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors">
                         Avançar <i class="ph ph-arrow-right"></i>
                     </button>
 
@@ -391,6 +475,100 @@
             volume: 1.0
         });
 
+        // Mock de Reservas Existentes (Poderia vir do LocalStorage ou Banco)
+        let reservations = [
+            { id: 1, resourceId: 'pta1', title: 'Indisponível', start: '2024-05-20T08:00:00', end: '2024-05-20T17:00:00', backgroundColor: '#3f3f46' }
+        ];
+
+        let calendar;
+        // Estado de controle da visualização do calendário
+        let calendarView = {
+            month: new Date().getMonth(),
+            year: new Date().getFullYear()
+        };
+
+        // ------------------
+        // Novo Formato de Seleção de Data (Calendário Estruturado)
+        // ------------------
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthYearLabel = document.getElementById('calendar-month-year');
+            
+            const firstDayOfMonth = new Date(calendarView.year, calendarView.month, 1).getDay();
+            const daysInMonth = new Date(calendarView.year, calendarView.month + 1, 0).getDate();
+            
+            const dateTitle = new Date(calendarView.year, calendarView.month);
+            monthYearLabel.textContent = dateTitle.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            let html = '';
+            // Preenchimento de dias vazios no início do mês
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                html += `<div class="h-16 md:h-24"></div>`;
+            }
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateObj = new Date(calendarView.year, calendarView.month, day);
+                const dateStr = `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
+                const isSelected = state.date === dateStr;
+                
+                // Bloqueios de data
+                // Removido o bloqueio automático de datas passadas para permitir lançamentos retroativos
+                let isDisabled = false; 
+                const eqpInfo = equipments.find(e => e.id === state.eqp);
+                if (eqpInfo && eqpInfo.advance) {
+                    const minDate = new Date();
+                    minDate.setDate(minDate.getDate() + 1);
+                    minDate.setHours(0,0,0,0);
+                    if (dateObj < minDate) isDisabled = true;
+                }
+
+                html += `
+                    <button onclick="${!isDisabled ? `selectDate('${dateStr}')` : ''}" 
+                         ${isDisabled ? 'disabled' : ''}
+                         class="group relative h-16 md:h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden
+                         ${isDisabled ? 'opacity-20 cursor-not-allowed border-transparent bg-zinc-900/50' : 
+                            isSelected 
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10 scale-105' 
+                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'}">
+                        
+                        ${isSelected && !isDisabled ? '<div class="shine-element"></div>' : ''}
+                        
+                        <span class="text-xl md:text-3xl font-black">${day}</span>
+                        ${isSelected ? '<i class="ph-bold ph-check text-[10px] mt-1"></i>' : ''}
+                    </button>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        window.changeMonth = function(offset) {
+            calendarView.month += offset;
+            const d = new Date(calendarView.year, calendarView.month);
+            calendarView.month = d.getMonth();
+            calendarView.year = d.getFullYear();
+            clickSfx.play();
+            renderCalendar();
+        }
+
+        window.goToToday = function() {
+            const now = new Date();
+            calendarView.month = now.getMonth();
+            calendarView.year = now.getFullYear();
+            clickSfx.play();
+            renderCalendar();
+        }
+
+        window.selectDate = function(dateStr) {
+            state.date = dateStr;
+            document.getElementById('date-input').value = dateStr;
+            clickSfx.play();
+            renderCalendar();
+            validateStep();
+        }
+
         // ------------------
         // Navegação em Abas
         // ------------------
@@ -437,16 +615,15 @@
         let state = {
             step: 1,
             date: '',
-            timeStart: '',
-            timeEnd: '',
+            timeStart: '08:00',
+            timeEnd: '17:00',
             name: '',
             sector: '',
             eqp: null
         };
 
         const dateInput = document.getElementById('date-input');
-        const timeStart = document.getElementById('time-start');
-        const timeEnd = document.getElementById('time-end');
+        const timeCardsContainer = document.getElementById('time-cards-container');
         const empName = document.getElementById('employee-name');
         const empSector = document.getElementById('employee-sector');
         
@@ -455,9 +632,8 @@
         const btnFinish = document.getElementById('btn-finish');
         const stepTexts = document.getElementById('current-step-text');
         const progressBar = document.getElementById('progress-bar');
-        
+
         const warningDate = document.getElementById('date-warning');
-        const warningTime = document.getElementById('time-warning');
 
         // Configuração inicial de data
         const pad = (n) => n < 10 ? '0'+n : n;
@@ -521,30 +697,17 @@
             }).join('');
         }
 
-        // Função global exposta para o onclick nos cards
         window.selectEqp = function(id) {
-            // Previne processamento e sons repetitivos ao clicar no mesmo item já selecionado
             if (state.eqp === id) return;
-
             state.eqp = id;
-            
-            // Tocar efeito sonoro de clique
             clickSfx.play();
+            state.date = ''; dateInput.value = '';
+            // Reseta para o mês atual ao mudar de equipamento
+            calendarView.month = new Date().getMonth();
+            calendarView.year = new Date().getFullYear();
             renderEquipments();
-            
-            // Regra de Negócio: Guindaste
-            const eqpInfo = equipments.find(e => e.id === id);
-            if(eqpInfo.advance) {
-                dateInput.min = getTomorrowStr();
-                // Limpa a data se for inferior à exigência
-                if(dateInput.value && dateInput.value < dateInput.min) {
-                    dateInput.value = '';
-                }
-            } else {
-                dateInput.min = getTodayStr();
-            }
             validateStep();
-        };
+        }
 
         // Regras de bloqueio de botão
         function validateStep() {
@@ -552,18 +715,18 @@
             if (state.step === 1) {
                 isValid = state.eqp !== null;
             } else if (state.step === 2) {
-                isValid = dateInput.value !== '' && dateInput.value >= dateInput.min;
-                warningDate.style.display = (dateInput.value !== '' && dateInput.value < dateInput.min) ? 'flex' : 'none';
+                isValid = state.date !== '';
             } else if (state.step === 3) {
-                isValid = timeStart.value !== '' && timeEnd.value !== '' && timeEnd.value >= timeStart.value;
-                warningTime.style.display = (timeStart.value !== '' && timeEnd.value !== '' && timeEnd.value < timeStart.value) ? 'flex' : 'none';
+                isValid = state.timeStart !== '';
+            } else if (state.step === 4) {
+                isValid = empName.value.trim() !== '' && empSector.value.trim() !== '';
             } else {
                 isValid = true;
             }
             btnNext.disabled = !isValid;
         }
 
-        [dateInput, timeStart, timeEnd, empName, empSector].forEach(input => {
+        [dateInput, empName, empSector].forEach(input => {
             input.addEventListener('input', validateStep);
         });
 
@@ -571,6 +734,25 @@
         function updateStepUI() {
             document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`step-${state.step}`).classList.add('active');
+
+            if(state.step === 2) {
+                renderCalendar();
+
+                const eqpInfo = equipments.find(e => e.id === state.eqp);
+                if (eqpInfo && eqpInfo.advance) {
+                    warningDate.innerHTML = '<i class="ph-fill ph-warning"></i> Não poderá reservar o guindaste para o mesmo dia, apenas com 1 dia de antecedência.';
+                    warningDate.classList.remove('hidden');
+                    warningDate.classList.add('flex');
+                } else {
+                    warningDate.classList.add('hidden');
+                    warningDate.classList.remove('flex');
+                }
+            } else if (state.step === 3) {
+                renderTimeCards();
+            } else {
+                warningDate.classList.add('hidden');
+                warningDate.classList.remove('flex');
+            }
             
             stepTexts.textContent = state.step;
             progressBar.style.width = `${(state.step / 4) * 100}%`;
@@ -599,12 +781,12 @@
             document.getElementById('res-sector').textContent = empSector.value;
             document.getElementById('res-eqp').textContent = eqpObj ? eqpObj.name : '-';
             
-            if(dateInput.value) {
-                const [y,m,d] = dateInput.value.split('-');
+            if(state.date) {
+                const [y,m,d] = state.date.split('-');
                 document.getElementById('res-date').textContent = `${d}/${m}/${y}`;
             }
-            document.getElementById('res-start').textContent = timeStart.value;
-            document.getElementById('res-end').textContent = timeEnd.value;
+            document.getElementById('res-start').textContent = state.timeStart || '-';
+            document.getElementById('res-end').textContent = state.timeEnd || '-';
         }
 
         btnNext.addEventListener('click', () => {
@@ -627,14 +809,26 @@
 
         // Simulação de Submissão Backend
         btnFinish.addEventListener('click', () => {
+            // Adiciona aos agendamentos reais
+            reservations.push({
+                id: Date.now(),
+                resourceId: state.eqp,
+                title: 'Indisponível: ' + empName.value,
+                start: dateInput.value + 'T' + (state.timeStart || '08:00') + ':00',
+                end: dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00',
+                backgroundColor: '#3f3f46'
+            });
+
             showToast('Solicitação Registrada!', 'O equipamento foi agendado com sucesso.');
             
             // Limpa Formulário
             state.step = 1;
             state.eqp = null;
-            dateInput.value = ''; timeStart.value = ''; timeEnd.value = '';
-            empName.value = ''; empSector.value = ''; 
+            state.date = '';
+            empName.value = ''; empSector.value = '';
             
+            if(calendar) calendar.destroy(); calendar = null;
+
             dateInput.min = getTodayStr(); // Reseta regra de bloqueio D+1
             
             renderEquipments();
