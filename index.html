@@ -53,13 +53,13 @@
             font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
         }
         .tab-content { display: none; height: 100%; width: 100%; }
-        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
         
         /* Especial para o Tab de Agendamento centralizado */
         #tab-new.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         
         .step-content { display: none; }
-        .step-content.active { display: block; animation: slideInX 0.3s ease-in-out; }
+        .step-content.active { display: block; animation: slideInX 0.15s ease-in-out; }
         #step-2.active { display: flex; flex-direction: column; width: 100%; }
 
         @keyframes fadeIn {
@@ -80,6 +80,15 @@
         ::-webkit-scrollbar-track { background: #18181b; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* Utility to hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
         
         /* Toast Notification */
         .toast {
@@ -88,7 +97,7 @@
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
         }
         .toast.show {
@@ -115,7 +124,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shine 0.7s ease-out forwards;
+            animation: shine 0.4s ease-out forwards;
             pointer-events: none;
         }
 
@@ -156,12 +165,87 @@
         .fc-v-event { background-color: #10b981 !important; border: none !important; border-left: 3px solid #059669 !important; }
         .fc-event-title { font-weight: 700; }
 
+        /* Cores Dinâmicas para os Pins no Calendário */
+        .bg-sky-500 { background-color: #0ea5e9; }
+        .bg-orange-500 { background-color: #f97316; }
+        .bg-indigo-500 { background-color: #6366f1; }
+        .text-sky-500 { color: #0ea5e9; }
+        .text-orange-500 { color: #f97316; }
+        .text-indigo-500 { color: #6366f1; }
+
+        /* Estilo do Pin (Círculo em volta do ícone) */
+        .res-pin {
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .res-pin:hover {
+            transform: scale(1.2) rotate(5deg);
+            z-index: 50;
+        }
+        .res-pin .info-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Animação de Raio para o Botão Hoje */
+        @keyframes ray-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .ray-effect {
+            position: absolute;
+            top: -150%;
+            left: -150%;
+            width: 400%;
+            height: 400%;
+            background: conic-gradient(from 90deg at 50% 50%, transparent 0%, transparent 60%, rgba(16, 185, 129, 1) 100%);
+            animation: ray-spin 3s linear infinite;
+        }
+
+        @keyframes select-bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.05); }
+        }
+        .day-selected-anim {
+            animation: select-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
         /* Slots de Horário */
         .time-slot-btn.active {
             background-color: #10b981;
             border-color: #10b981;
             color: white;
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .time-slot-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background-color: #18181b;
+            border-color: #27272a;
+            color: #52525b;
+        }
+
+        /* Faixa de Reservado 45 graus */
+        .reserved-ribbon {
+            position: absolute;
+            top: 20px;
+            left: -35px;
+            width: 150px;
+            background: #ef4444;
+            color: white;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 900;
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 40;
+            pointer-events: none;
+            text-transform: uppercase;
+            padding: 2px 0;
         }
 
         /* Ajustes para a Agenda Mensal */
@@ -177,7 +261,7 @@
 <body class="h-screen flex flex-col overflow-hidden">
     <!-- Header -->
     <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="flex items-center justify-center w-8 h-8 rounded bg-emerald-500/10 text-emerald-500">
                     <i class="ph-fill ph-hard-hat text-xl"></i>
@@ -187,6 +271,18 @@
                 </h1>
             </div>
 
+            <!-- Navegação de Abas -->
+            <nav class="flex items-center p-1 bg-zinc-950 rounded-xl border border-zinc-800">
+                <button data-target="tab-new" class="nav-btn active flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all bg-emerald-500/15 text-emerald-400">
+                    <i class="ph-bold ph-plus-circle"></i> Reservar
+                </button>
+                <button data-target="tab-dashboard" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-400 hover:text-zinc-100">
+                    <i class="ph-bold ph-chart-bar"></i> Indicadores
+                </button>
+                <button data-target="tab-import" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-400 hover:text-zinc-100">
+                    <i class="ph-bold ph-file-arrow-up"></i> Importar
+                </button>
+            </nav>
         </div>
     </header>
 
@@ -296,17 +392,24 @@
                 <div class="mb-6">
                     <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Passo <span id="current-step-text">1</span> de 4</p>
                     <div class="w-full bg-zinc-950 rounded-full h-1.5 mb-6">
-                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 33%"></div>
+                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 33%"></div>
                     </div>
                 </div>
 
                 <!-- Áreas do Formulário Wizard -->
-                <div class="flex-1 overflow-y-auto flex flex-col">
+                <div class="flex-1 overflow-y-auto flex flex-col no-scrollbar">
                     
                     <!-- Passo 1: Seleção de Equipamento (Agora o Primeiro) -->
                     <div id="step-1" class="step-content active max-w-6xl mx-auto w-full pt-4 md:pt-10">
-                        <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
-                        <p class="text-zinc-400 text-sm mb-4 md:mb-8">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-8">
+                            <div>
+                                <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
+                                <p class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                            </div>
+                            <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700 shadow-lg group">
+                                <i class="ph-bold ph-calendar-blank text-lg text-emerald-500 group-hover:scale-110 transition-transform"></i> Ver agenda
+                            </button>
+                        </div>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="equipment-grid">
                             <!-- Cards gerados pelo JavaScript com cores vivas e animação -->
@@ -316,35 +419,47 @@
                     <!-- Passo 2: Seleção de Data (Novo Formato de Cards) -->
                     <div id="step-2" class="step-content">
                         <!-- Cabeçalho Fixo (Título, Navegação e Dias da Semana) -->
-                        <div class="sticky top-0 bg-zinc-900 z-20 pt-4 md:pt-10 pb-4 shadow-md">
+                        <div class="sticky top-0 bg-zinc-900 z-40 pt-2 md:pt-6 pb-4 shadow-md">
                             <div class="w-full px-4 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-6">
                                 <div>
                                     <h3 class="text-2xl font-bold text-zinc-100 mb-2">Quando você precisa?</h3>
                                     <p class="text-zinc-400 text-sm">Navegue pelos meses e selecione o dia ideal.</p>
+                                    <!-- Aviso de Antecedência -->
+                                    <p id="date-warning" class="text-orange-500 font-bold text-[10px] uppercase mt-3 hidden items-center gap-1.5 animate-pulse bg-orange-500/5 px-3 py-1.5 rounded-lg border border-orange-500/20 w-fit">
+                                        <i class="ph-fill ph-warning-circle text-base"></i> 
+                                        Atenção: Este recurso exige agendamento prévio (Mín. 1 dia).
+                                    </p>
                                 </div>
-                                <!-- Navegação do Calendário -->
-                                <div class="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800 self-center md:self-auto">
-                                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
-                                        <i class="ph-bold ph-caret-left"></i>
+                                <div class="flex items-center gap-4 self-center md:self-auto">
+                                    <!-- Botão Hoje fora com animação de raio -->
+                                    <button onclick="goToToday()" class="relative p-[1px] overflow-hidden rounded-xl transition-all hover:scale-105 active:scale-95 group">
+                                        <div class="ray-effect"></div>
+                                        <div class="relative px-4 py-2 rounded-xl bg-zinc-900 text-[10px] font-black uppercase tracking-tighter text-zinc-200 backdrop-blur-3xl">
+                                            Hoje
+                                        </div>
                                     </button>
-                                    <button onclick="goToToday()" class="px-2 py-1 text-[10px] font-black uppercase tracking-tighter bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-all">
-                                        Hoje
-                                    </button>
-                                    <span id="calendar-month-year" class="px-4 font-bold text-zinc-100 min-w-[160px] text-center capitalize"></span>
-                                    <button onclick="changeMonth(1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
-                                        <i class="ph-bold ph-caret-right"></i>
-                                    </button>
+
+                                    <!-- Navegação do Calendário -->
+                                    <div class="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                            <i class="ph-bold ph-caret-left"></i>
+                                        </button>
+                                        <span id="calendar-month-year" class="px-4 font-bold text-zinc-100 min-w-[160px] text-center capitalize"></span>
+                                        <button onclick="changeMonth(1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                            <i class="ph-bold ph-caret-right"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Cabeçalho de Dias da Semana (Também Fixo) -->
-                            <div class="max-w-4xl mx-auto w-full px-4 grid grid-cols-7 text-center text-[10px] uppercase font-black tracking-widest text-zinc-500">
+                            <div class="max-w-5xl mx-auto w-full px-4 grid grid-cols-7 text-center text-[10px] uppercase font-black tracking-widest text-zinc-500">
                                 <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
                             </div>
                         </div>
 
-                        <div class="max-w-4xl mx-auto w-full px-4">
+                        <div class="max-w-5xl mx-auto w-full px-4">
                             <!-- Grid do Calendário -->
-                            <div id="calendar-grid" class="grid grid-cols-7 gap-2 pb-10 mt-4">
+                            <div id="calendar-grid" class="grid grid-cols-7 gap-2 pb-10 mt-2">
                                 <!-- Dias gerados via JS -->
                             </div>
                         </div>
@@ -361,7 +476,6 @@
                         <div id="time-cards-container" class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
                             <!-- Cards de horário gerados dinamicamente -->
                         </div>
-                        <p id="date-warning" class="text-amber-500 text-sm mt-4 hidden items-center justify-center gap-1"><i class="ph-fill ph-warning"></i> Data indisponível para o equipamento selecionado.</p>
                     </div>
 
                     <!-- Passo 4: Identificação e Confirmação -->
@@ -381,16 +495,16 @@
                         
                         <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-4xl text-left">
                             <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Funcionário</p><p id="res-name" class="text-zinc-100 font-medium">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Setor / Matrícula</p><p id="res-sector" class="text-zinc-100 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Funcionário</p><p id="res-name" class="text-zinc-100 font-bold">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Setor / Matrícula</p><p id="res-sector" class="text-zinc-100 font-bold">-</p></div>
                             </div>
                             <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Equipamento</p><p id="res-eqp" class="text-emerald-400 font-medium">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Data</p><p id="res-date" class="text-zinc-100 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Equipamento</p><p id="res-eqp" class="text-emerald-400 font-bold">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Data</p><p id="res-date" class="text-zinc-100 font-bold">-</p></div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Retirada</p><p id="res-start" class="text-zinc-100 font-medium">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Devolução</p><p id="res-end" class="text-zinc-100 font-medium">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Retirada</p><p id="res-start" class="text-zinc-100 font-bold">-</p></div>
+                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Devolução</p><p id="res-end" class="text-zinc-100 font-bold">-</p></div>
                             </div>
                         </div>
                         
@@ -410,11 +524,11 @@
                         <i class="ph ph-arrow-left"></i> Voltar
                     </button>
                     
-                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors">
+                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors">
                         Avançar <i class="ph ph-arrow-right"></i>
                     </button>
 
-                    <button id="btn-finish" class="hidden items-center gap-2 px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all">
+                    <button id="btn-finish" class="hidden items-center gap-2 px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all">
                         Confirmar Ação <i class="ph-fill ph-check-circle"></i>
                     </button>
                 </div>
@@ -454,6 +568,97 @@
         </div>
     </main>
 
+    <!-- Modal de Confirmação para o botão Hoje -->
+    <div id="confirmHojeModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full mx-auto flex items-center justify-center mb-4">
+                    <i class="ph-fill ph-calendar-check text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-zinc-100 mb-2">Agendar para Hoje?</h3>
+                <p class="text-sm text-zinc-400 mb-6">Você selecionou a opção de agendamento rápido para a data de hoje. Deseja prosseguir?</p>
+                <div class="flex gap-3">
+                    <button id="btn-cancel-hoje" class="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs uppercase transition-all">Cancelar</button>
+                    <button id="btn-confirm-hoje" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase shadow-lg shadow-emerald-500/20 transition-all">Sim, agendar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Negação para o botão Hoje (Regra de Antecedência) -->
+    <div id="deniedHojeModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full mx-auto flex items-center justify-center mb-4">
+                    <i class="ph-fill ph-x-circle text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-zinc-100 mb-2">Agendamento Negado</h3>
+                <p id="denied-hoje-message" class="text-sm text-zinc-400 mb-6">Este recurso não permite agendamentos para o mesmo dia.</p>
+                <button id="btn-close-denied-hoje" class="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs uppercase transition-all">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes da Reserva (Acionado pelos Pins) -->
+    <div id="resDetailModal" class="hidden fixed inset-0 z-[130] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 text-center">
+                <div id="resDetailIcon" class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 text-white shadow-lg rotate-3 transition-all">
+                    <i class="ph-fill ph-question text-4xl"></i>
+                </div>
+                <h3 id="resDetailEqp" class="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Equipamento</h3>
+                <div class="space-y-3 mb-8">
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 text-left">
+                        <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-1">Período</p>
+                        <p id="resDetailTime" class="text-zinc-100 font-bold text-sm">--:-- às --:--</p>
+                    </div>
+                    <div class="bg-zinc-950 p-5 rounded-2xl border border-zinc-800 text-left">
+                        <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-1">Reservado por</p>
+                        <p id="resDetailUser" class="text-emerald-400 font-bold text-lg">Nome do Usuário</p>
+                    </div>
+                </div>
+                <button onclick="closeResDetail()" class="w-full py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-sm uppercase transition-all">Fechar Detalhes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Agenda Geral -->
+    <div id="generalAgendaModal" class="hidden fixed inset-0 z-[120] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[95vh]">
+            <div class="p-8 border-b border-zinc-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-tighter">Agenda Geral</h3>
+                        <div class="flex items-center gap-4 mt-4">
+                            <button onclick="changeGeneralMonth(-1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                <i class="ph-bold ph-caret-left"></i>
+                            </button>
+                            <span id="gen-calendar-month-year" class="px-4 font-bold text-zinc-100 min-w-[180px] text-center capitalize text-lg"></span>
+                            <button onclick="changeGeneralMonth(1)" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                <i class="ph-bold ph-caret-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="closeGeneralAgenda()" class="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-full transition-all">
+                        <i class="ph-bold ph-x text-xl"></i>
+                    </button>
+                </div>
+                <!-- Cabeçalho de Dias da Semana -->
+                <div class="grid grid-cols-7 text-center text-[10px] uppercase font-black tracking-widest text-zinc-500 mt-8">
+                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                </div>
+            </div>
+            <div class="p-8 overflow-y-auto no-scrollbar flex-1">
+                <div id="gen-calendar-grid" class="grid grid-cols-7 gap-2 pb-10">
+                    <!-- Dias gerados via JS -->
+                </div>
+            </div>
+            <div class="p-6 bg-zinc-950/50 border-t border-zinc-800">
+                <button onclick="closeGeneralAgenda()" class="w-full py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-sm uppercase transition-all">Voltar ao Agendamento</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal / Toast de Notificação -->
     <div id="toastMessage" class="toast flex items-center gap-3 bg-zinc-800 border border-zinc-700 shadow-2xl rounded-xl p-4 text-zinc-100 max-w-sm w-full mx-4">
         <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-full shrink-0">
@@ -476,9 +681,7 @@
         });
 
         // Mock de Reservas Existentes (Poderia vir do LocalStorage ou Banco)
-        let reservations = [
-            { id: 1, resourceId: 'pta1', title: 'Indisponível', start: '2024-05-20T08:00:00', end: '2024-05-20T17:00:00', backgroundColor: '#3f3f46' }
-        ];
+        let reservations = [];
 
         let calendar;
         // Estado de controle da visualização do calendário
@@ -503,7 +706,7 @@
             let html = '';
             // Preenchimento de dias vazios no início do mês
             for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="h-16 md:h-24"></div>`;
+                html += `<div class="h-10 md:h-14"></div>`;
             }
 
             const today = new Date();
@@ -515,8 +718,7 @@
                 const isSelected = state.date === dateStr;
                 
                 // Bloqueios de data
-                // Removido o bloqueio automático de datas passadas para permitir lançamentos retroativos
-                let isDisabled = false; 
+                let isDisabled = dateObj < today; 
                 const eqpInfo = equipments.find(e => e.id === state.eqp);
                 if (eqpInfo && eqpInfo.advance) {
                     const minDate = new Date();
@@ -525,19 +727,50 @@
                     if (dateObj < minDate) isDisabled = true;
                 }
 
+                // Buscar reservas para este dia específico para mostrar os "pins" de ocupação
+                const dayReservations = reservations.filter(res => res.start.startsWith(dateStr));
+                // Pegar IDs únicos de equipamentos reservados no dia para não repetir ícones
+                const reservedEqpIds = [...new Set(dayReservations.map(res => res.resourceId))];
+                
+                let pinsHtml = '';
+                if (reservedEqpIds.length > 0) {
+                    pinsHtml = `<div class="absolute top-1 right-1 flex flex-wrap justify-end gap-1 max-w-[70%] p-0.5 z-30">`;
+                    reservedEqpIds.forEach(id => {
+                        const eqp = equipments.find(e => e.id === id);
+                        if (eqp) {
+                            // Localizar a reserva para pegar os dados de quem agendou
+                            const resData = reservations.find(r => r.resourceId === id && r.start.startsWith(dateStr));
+                            const resJson = encodeURIComponent(JSON.stringify({ ...resData, eqpName: eqp.name, eqpColor: eqp.color }));
+
+                            const colorBase = eqp.color;
+                            const circleClass = isSelected ? 'bg-white' : `bg-${colorBase}-500`;
+                            const iconClass = isSelected ? `text-${colorBase}-500` : 'text-white';
+
+                            pinsHtml += `
+                                <div onclick="event.stopPropagation(); showResDetail('${resJson}')" 
+                                     class="res-pin w-5 h-5 md:w-7 md:h-7 rounded-full ${circleClass} ${iconClass} flex items-center justify-center shadow-md">
+                                    <i class="ph-fill ${eqp.icon} text-[10px] md:text-[14px]"></i>
+                                    <div class="info-badge w-2.5 h-2.5 md:w-3.5 md:h-3.5 bg-zinc-900 text-white rounded-full flex items-center justify-center text-[6px] md:text-[8px] font-bold">?</div>
+                                </div>`;
+                        }
+                    });
+                    pinsHtml += `</div>`;
+                }
+
                 html += `
                     <button onclick="${!isDisabled ? `selectDate('${dateStr}')` : ''}" 
                          ${isDisabled ? 'disabled' : ''}
-                         class="group relative h-16 md:h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden
+                         class="group relative h-10 md:h-14 rounded-lg border-2 transition-all flex flex-col items-center justify-center overflow-hidden
                          ${isDisabled ? 'opacity-20 cursor-not-allowed border-transparent bg-zinc-900/50' : 
                             isSelected 
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10 scale-105' 
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10 day-selected-anim' 
                             : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'}">
                         
                         ${isSelected && !isDisabled ? '<div class="shine-element"></div>' : ''}
                         
-                        <span class="text-xl md:text-3xl font-black">${day}</span>
-                        ${isSelected ? '<i class="ph-bold ph-check text-[10px] mt-1"></i>' : ''}
+                        ${pinsHtml}
+
+                        <span class="text-base md:text-xl font-black">${day}</span>
                     </button>
                 `;
             }
@@ -553,12 +786,223 @@
             renderCalendar();
         }
 
-        window.goToToday = function() {
-            const now = new Date();
-            calendarView.month = now.getMonth();
-            calendarView.year = now.getFullYear();
+        // Função auxiliar para criar timestamps consistentes e evitar erros de fuso horário
+        function getSafeTimestamp(dateStr, timeStr = "00:00") {
+            // Garante o formato YYYY-MM-DDTHH:mm:ss para interpretação local consistente no navegador
+            const isoString = `${dateStr}T${timeStr}:00`;
+            return new Date(isoString).getTime();
+        }
+
+        function renderTimeCards() {
+            const periods = [
+                { id: 'manha', label: 'Manhã', icon: 'ph-sun', start: '08:00', end: '12:00', color: 'emerald' },
+                { id: 'tarde', label: 'Tarde', icon: 'ph-cloud-sun', start: '13:00', end: '17:00', color: 'amber' },
+                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'sky' }
+            ];
+
+            timeCardsContainer.innerHTML = periods.map(p => {
+                const eqpInfo = equipments.find(e => e.id === state.eqp);
+                const isSelected = state.timeStart === p.start && state.timeEnd === p.end;
+                const vividColor = isSelected ? `bg-${p.color}-500` : 'bg-zinc-800';
+                
+                // 1. Verificação de Ocupação Real usando a nova função segura
+                const slotStart = getSafeTimestamp(state.date, p.start);
+                const slotEnd = getSafeTimestamp(state.date, p.end);
+
+                const isOccupied = reservations.some(res => {
+                    if (res.resourceId !== state.eqp) return false;
+                    const resStart = new Date(res.start).getTime();
+                    const resEnd = new Date(res.end).getTime();
+                    return resStart < slotEnd && slotStart < resEnd;
+                });
+
+                // 2. Verificação de Antecedência (Lead Time) - Crucial para o Guindaste
+                let isLeadTimeLocked = false;
+                if (eqpInfo && eqpInfo.advance) {
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const minAllowedTimestamp = tomorrow.getTime();
+                    
+                    const selectedDayTimestamp = getSafeTimestamp(state.date);
+                    if (selectedDayTimestamp < minAllowedTimestamp) isLeadTimeLocked = true;
+                }
+
+                const finalDisabled = isOccupied || isLeadTimeLocked;
+
+                return `
+                    <button type="button" 
+                        ${finalDisabled ? 'disabled' : `onclick="selectPeriod('${p.start}', '${p.end}')"`}
+                        class="flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all duration-150
+                        ${isSelected ? 'border-emerald-500 bg-zinc-800 scale-105 shadow-xl' : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'}
+                        ${finalDisabled ? 'opacity-40 grayscale cursor-not-allowed' : ''}">
+                        <div class="w-12 h-12 rounded-full mb-4 flex items-center justify-center ${finalDisabled ? 'bg-zinc-700' : vividColor} text-white transition-all duration-150">
+                            <i class="ph-bold ${p.icon} text-xl"></i>
+                        </div>
+                        <span class="block text-lg font-bold text-zinc-100">${p.label}</span>
+                        <span class="text-zinc-500 text-xs mt-1">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO (D+1)' : p.start + ' às ' + p.end)}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.selectPeriod = function(start, end) {
+            state.timeStart = start;
+            state.timeEnd = end;
             clickSfx.play();
-            renderCalendar();
+            renderTimeCards();
+            validateStep();
+        }
+
+        window.showResDetail = function(jsonStr) {
+            const data = JSON.parse(decodeURIComponent(jsonStr));
+            const modal = document.getElementById('resDetailModal');
+            const iconBox = document.getElementById('resDetailIcon');
+            const eqpLabel = document.getElementById('resDetailEqp');
+            const userLabel = document.getElementById('resDetailUser');
+            const timeLabel = document.getElementById('resDetailTime');
+
+            const colorMap = { emerald: 'bg-emerald-500', sky: 'bg-sky-500', orange: 'bg-orange-500', indigo: 'bg-indigo-500' };
+            iconBox.className = `w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 text-white shadow-xl rotate-3 ${colorMap[data.eqpColor] || 'bg-zinc-700'}`;
+            
+            const eqpObj = equipments.find(e => e.id === data.resourceId);
+            iconBox.innerHTML = `<i class="ph-fill ${eqpObj ? eqpObj.icon : 'ph-question'} text-4xl"></i>`;
+            eqpLabel.textContent = data.eqpName;
+            userLabel.textContent = data.requester || 'Não informado';
+
+            // Formatação do horário para exibição
+            const start = new Date(data.start);
+            const end = new Date(data.end);
+            timeLabel.textContent = `${pad(start.getHours())}:${pad(start.getMinutes())} às ${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            clickSfx.play();
+        }
+
+        window.closeResDetail = () => document.getElementById('resDetailModal').classList.add('hidden');
+
+        // Estado da Agenda Geral
+        let generalAgendaView = {
+            month: new Date().getMonth(),
+            year: new Date().getFullYear()
+        };
+
+        window.changeGeneralMonth = function(offset) {
+            generalAgendaView.month += offset;
+            const d = new Date(generalAgendaView.year, generalAgendaView.month);
+            generalAgendaView.month = d.getMonth();
+            generalAgendaView.year = d.getFullYear();
+            clickSfx.play();
+            renderGeneralAgendaCalendar();
+        }
+
+        function renderGeneralAgendaCalendar() {
+            const grid = document.getElementById('gen-calendar-grid');
+            const monthYearLabel = document.getElementById('gen-calendar-month-year');
+            
+            const firstDayOfMonth = new Date(generalAgendaView.year, generalAgendaView.month, 1).getDay();
+            const daysInMonth = new Date(generalAgendaView.year, generalAgendaView.month + 1, 0).getDate();
+            
+            const dateTitle = new Date(generalAgendaView.year, generalAgendaView.month);
+            monthYearLabel.textContent = dateTitle.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            let html = '';
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                html += `<div class="h-16 md:h-20"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${generalAgendaView.year}-${pad(generalAgendaView.month + 1)}-${pad(day)}`;
+                const dayReservations = reservations.filter(res => res.start.startsWith(dateStr));
+                const reservedEqpIds = [...new Set(dayReservations.map(res => res.resourceId))];
+                
+                let pinsHtml = '';
+                if (reservedEqpIds.length > 0) {
+                    pinsHtml = `<div class="absolute top-1 right-1 flex flex-wrap justify-end gap-1 max-w-[80%] z-30">`;
+                    reservedEqpIds.forEach(id => {
+                        const eqp = equipments.find(e => e.id === id);
+                        if (eqp) {
+                            const resData = reservations.find(r => r.resourceId === id && r.start.startsWith(dateStr));
+                            const resJson = encodeURIComponent(JSON.stringify({ ...resData, eqpName: eqp.name, eqpColor: eqp.color }));
+                            pinsHtml += `
+                                <div onclick="event.stopPropagation(); showResDetail('${resJson}')" 
+                                     class="res-pin w-6 h-6 rounded-full bg-${eqp.color}-500 text-white flex items-center justify-center shadow-lg border border-zinc-900/50">
+                                    <i class="ph-fill ${eqp.icon} text-[12px]"></i>
+                                </div>`;
+                        }
+                    });
+                    pinsHtml += `</div>`;
+                }
+
+                html += `
+                    <div class="relative h-16 md:h-20 rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center transition-all hover:border-zinc-600">
+                        ${pinsHtml}
+                        <span class="text-xl font-black text-zinc-500">${day}</span>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        window.showGeneralAgenda = function() {
+            const modal = document.getElementById('generalAgendaModal');
+            // Reseta a visão para o mês atual ao abrir
+            const now = new Date();
+            generalAgendaView.month = now.getMonth();
+            generalAgendaView.year = now.getFullYear();
+            
+            clickSfx.play();
+            renderGeneralAgendaCalendar();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        window.closeGeneralAgenda = () => document.getElementById('generalAgendaModal').classList.add('hidden');
+
+        window.goToToday = function() {
+            const eqpInfo = equipments.find(e => e.id === state.eqp);
+            
+            // Verifica se o equipamento selecionado exige antecedência
+            if (eqpInfo && eqpInfo.advance) {
+                const deniedModal = document.getElementById('deniedHojeModal');
+                const deniedMsg = document.getElementById('denied-hoje-message');
+
+                deniedMsg.innerHTML = `O recurso <b>${eqpInfo.name}</b> exige no mínimo 1 dia de antecedência para reservas. Não é possível agendar para hoje.`;
+                
+                // Primeiro mostra o modal para o navegador calcular o layout
+                deniedModal.classList.remove('hidden');
+                deniedModal.classList.add('flex');
+                clickSfx.play();
+                
+                document.getElementById('btn-close-denied-hoje').onclick = () => {
+                    deniedModal.classList.add('hidden');
+                    deniedModal.classList.remove('flex');
+                };
+                return;
+            }
+
+            const modal = document.getElementById('confirmHojeModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            clickSfx.play();
+            
+            document.getElementById('btn-cancel-hoje').onclick = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+            
+            document.getElementById('btn-confirm-hoje').onclick = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                const now = new Date();
+                calendarView.month = now.getMonth();
+                calendarView.year = now.getFullYear();
+                selectDate(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+            };
         }
 
         window.selectDate = function(dateStr) {
@@ -650,10 +1094,49 @@
         dateInput.min = getTodayStr();
 
         // Renderizar dinamicamente os cards de equipamento
-        const grid = document.getElementById('equipment-grid');
+        const eqpGrid = document.getElementById('equipment-grid');
         function renderEquipments() {
-            grid.innerHTML = equipments.map(eqp => {
+            const d = new Date();
+            const todayStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            const tomorrow = new Date(d);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+
+            eqpGrid.innerHTML = equipments.map(eqp => {
                 const isSelected = state.eqp === eqp.id;
+                const checkDate = eqp.advance ? tomorrowStr : todayStr;
+                
+                // Lógica de Ocupação
+                const isFullyOccupied = (function() {
+                    // REGRA CRÍTICA: Se for o Guindaste e houver QUALQUER reserva no sistema, ele trava.
+                    if (eqp.id === 'guindaste') {
+                        return reservations.some(res => res.resourceId === 'guindaste');
+                    }
+
+                    // Lógica para os demais equipamentos (baseada na data alvo)
+                    const dayRes = reservations.filter(res => 
+                        res.resourceId === eqp.id && res.start.startsWith(checkDate)
+                    );
+                    
+                    if (dayRes.length === 0) return false;
+
+                    // Verifica se algum agendamento cobre o período da manhã (08h-12h)
+                    const morningBlocked = dayRes.some(r => {
+                        const startH = parseInt(r.start.split('T')[1].split(':')[0]);
+                        const endH = parseInt(r.end.split('T')[1].split(':')[0]);
+                        return startH <= 8 && endH >= 12;
+                    });
+
+                    // Verifica se algum agendamento cobre o período da tarde (13h-17h)
+                    const afternoonBlocked = dayRes.some(r => {
+                        const startH = parseInt(r.start.split('T')[1].split(':')[0]);
+                        const endH = parseInt(r.end.split('T')[1].split(':')[0]);
+                        return startH <= 13 && endH >= 17;
+                    });
+
+                    return morningBlocked && afternoonBlocked;
+                })();
+
                 const vividColor = {
                     emerald: 'bg-emerald-500',
                     sky: 'bg-sky-500',
@@ -661,34 +1144,44 @@
                     indigo: 'bg-indigo-500'
                 }[eqp.color];
 
-                const borderGlow = {
+                const borderGlow = isSelected ? {
                     emerald: 'border-emerald-500/50 shadow-emerald-500/20 ring-emerald-500/10',
                     sky: 'border-sky-500/50 shadow-sky-500/20 ring-sky-500/10',
                     orange: 'border-orange-500/50 shadow-orange-500/20 ring-orange-500/10',
                     indigo: 'border-indigo-500/50 shadow-indigo-500/20 ring-indigo-500/10'
-                }[eqp.color];
+                }[eqp.color] : '';
 
                 return `
-                    <button type="button" onclick="selectEqp('${eqp.id}')"
-                        class="relative flex flex-col items-center justify-center p-5 rounded-[2rem] border-2 text-center transition-all duration-500 overflow-hidden
-                        ${isSelected ? `bg-zinc-900 ${borderGlow} scale-[1.02] shadow-2xl ring-4` : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600 hover:scale-105 active:scale-95'}">
+                    <button type="button" 
+                        ${isFullyOccupied ? '' : `onclick="selectEqp('${eqp.id}')"`}
+                        class="group relative flex flex-col items-center justify-center p-5 rounded-[2rem] border-2 text-center transition-all duration-200 overflow-hidden 
+                        ${isFullyOccupied ? 'bg-zinc-800 border-zinc-700 grayscale opacity-60 cursor-not-allowed' : 
+                          (isSelected ? `bg-zinc-900 ${borderGlow} scale-[1.02] shadow-2xl ring-4` : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600 hover:bg-zinc-900/80 hover:scale-[1.02] hover:shadow-[inset_0_4px_20px_rgba(0,0,0,0.6)] active:scale-95')}">
                         
-                        ${isSelected ? '<div class="shine-element"></div>' : ''}
+                        ${isSelected && !isFullyOccupied ? '<div class="shine-element"></div>' : ''}
 
-                        <div class="w-16 h-16 rounded-2xl mb-4 flex items-center justify-center ${isSelected ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500'} transition-all duration-500 ease-out">
+                        ${isFullyOccupied ? '<div class="reserved-ribbon">Indisponivel</div>' : ''}
+
+                        <div class="w-16 h-16 rounded-2xl mb-4 flex items-center justify-center ${isSelected && !isFullyOccupied ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300'} transition-all duration-500 ease-out">
                             <i class="ph ${eqp.icon} text-3xl"></i>
                         </div>
                         
                         <div class="flex-1 z-10">
-                            <span class="block text-xl font-black tracking-tight ${isSelected ? 'text-white' : 'text-zinc-500'} transition-colors duration-500">${eqp.name}</span>
+                            <span class="block text-xl font-black tracking-tight ${isSelected && !isFullyOccupied ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-200'} transition-colors duration-500">${eqp.name}</span>
                             ${eqp.advance 
-                                ? `<span class="text-[9px] ${isSelected ? 'text-orange-500' : 'text-zinc-500'} uppercase tracking-tighter mt-2 font-black block transition-colors duration-500">Mín. 1 dia de antecedência para reservar</span>` 
-                                : `<span class="text-[9px] ${isSelected ? 'text-emerald-500' : 'text-zinc-500'} uppercase tracking-tighter mt-2 font-black block transition-colors duration-500">Sem limite mínimo para reservar</span>`
+                                ? `<div class="mt-2.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 inline-flex items-center gap-1.5">
+                                     <i class="ph-fill ph-clock-counter-clockwise text-orange-500 text-[10px]"></i>
+                                     <span class="text-[9px] text-orange-500 uppercase tracking-wide font-black block">Mín. 1 dia antecedência</span>
+                                   </div>` 
+                                : `<div class="mt-2.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1.5">
+                                     <i class="ph-fill ph-bolt text-emerald-500 text-[10px]"></i>
+                                     <span class="text-[9px] text-emerald-500 uppercase tracking-wide font-black block">Reserva Imediata</span>
+                                   </div>`
                             }
                         </div>
                         
-                        ${isSelected ? `
-                            <div class="absolute -top-2 -right-2 w-12 h-12 ${vividColor} rounded-bl-[2rem] flex items-center justify-center border-t-2 border-r-2 border-white/20">
+                        ${isSelected && !isFullyOccupied ? `
+                            <div class="absolute -top-2 -right-2 w-12 h-12 bg-emerald-500 rounded-bl-[2rem] flex items-center justify-center border-t-2 border-r-2 border-white/20">
                                 <i class="ph-bold ph-check text-white text-sm"></i>
                             </div>
                         ` : ''}
@@ -732,15 +1225,18 @@
 
         // Alternância de conteúdo dos passos
         function updateStepUI() {
-            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step-${state.step}`).classList.add('active');
+            const steps = document.querySelectorAll('.step-content');
+            steps.forEach(el => el.classList.remove('active'));
+            
+            const currentStepEl = document.getElementById(`step-${state.step}`);
+            if (currentStepEl) currentStepEl.classList.add('active');
 
             if(state.step === 2) {
                 renderCalendar();
 
                 const eqpInfo = equipments.find(e => e.id === state.eqp);
                 if (eqpInfo && eqpInfo.advance) {
-                    warningDate.innerHTML = '<i class="ph-fill ph-warning"></i> Não poderá reservar o guindaste para o mesmo dia, apenas com 1 dia de antecedência.';
+                    warningDate.innerHTML = `<i class="ph-fill ph-warning-circle text-base"></i> Atenção: O agendamento para o recurso <b>${eqpInfo.name}</b> exige no mínimo 1 dia de antecedência.`;
                     warningDate.classList.remove('hidden');
                     warningDate.classList.add('flex');
                 } else {
@@ -790,10 +1286,16 @@
         }
 
         btnNext.addEventListener('click', () => {
-            if(state.step < 4) { state.step++; updateStepUI(); }
+            if (state.step < 4) { 
+                state.step++; 
+                updateStepUI(); 
+            }
         });
         btnPrev.addEventListener('click', () => {
-            if(state.step > 1) { state.step--; updateStepUI(); }
+            if (state.step > 1) { 
+                state.step--; 
+                updateStepUI(); 
+            }
         });
 
         // ------------------
@@ -809,10 +1311,27 @@
 
         // Simulação de Submissão Backend
         btnFinish.addEventListener('click', () => {
+            // Validação de Segurança contra conflitos de última hora
+            const startDateTime = dateInput.value + 'T' + (state.timeStart || '08:00') + ':00';
+            const endDateTime = dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00';
+            const newStart = new Date(startDateTime).getTime();
+            const newEnd = new Date(endDateTime).getTime();
+
+            const conflict = reservations.some(res => {
+                if (res.resourceId !== state.eqp) return false;
+                return new Date(res.start).getTime() < newEnd && newStart < new Date(res.end).getTime();
+            });
+
+            if (conflict) {
+                showToast('Erro de Conflito', 'Este horário acabou de ser ocupado. Escolha outra data ou turno.');
+                return;
+            }
+
             // Adiciona aos agendamentos reais
             reservations.push({
                 id: Date.now(),
                 resourceId: state.eqp,
+                requester: empName.value,
                 title: 'Indisponível: ' + empName.value,
                 start: dateInput.value + 'T' + (state.timeStart || '08:00') + ':00',
                 end: dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00',
@@ -826,18 +1345,11 @@
             state.eqp = null;
             state.date = '';
             empName.value = ''; empSector.value = '';
-            
-            if(calendar) calendar.destroy(); calendar = null;
 
             dateInput.min = getTodayStr(); // Reseta regra de bloqueio D+1
             
             renderEquipments();
             updateStepUI();
-            
-            // Retorna ao Menu Inicial Após 1,5 segundos
-            setTimeout(() => {
-                document.querySelector('[data-target="tab-dashboard"]').click();
-            }, 1500);
         });
 
         // Bind Inicial
@@ -907,14 +1419,15 @@
         // ------------------
         Chart.defaults.color = '#a1a1aa';
         Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
-        let chartsInitialized = false;
 
         function initCharts() {
-            if(chartsInitialized) return;
-            chartsInitialized = true;
+            // Destruir instâncias existentes para evitar bugs de renderização e sobreposição
+            if (window.trendChartInst) window.trendChartInst.destroy();
+            if (window.rankingChartInst) window.rankingChartInst.destroy();
+            if (window.pieChartInst) window.pieChartInst.destroy();
 
             const trendCtx = document.getElementById('trendChart').getContext('2d');
-            new Chart(trendCtx, {
+            window.trendChartInst = new Chart(trendCtx, {
                 type: 'bar',
                 data: {
                     labels: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
@@ -937,7 +1450,7 @@
             });
 
             const rankCtx = document.getElementById('rankingChart').getContext('2d');
-            new Chart(rankCtx, {
+            window.rankingChartInst = new Chart(rankCtx, {
                 type: 'bar',
                 data: {
                     labels: ['João Silva', 'Carlos Alves', 'Miguel Souza', 'Ana Costa', 'Lucas Lima'],
@@ -961,7 +1474,7 @@
             });
 
             const pieCtx = document.getElementById('pieChart').getContext('2d');
-            new Chart(pieCtx, {
+            window.pieChartInst = new Chart(pieCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['PTA 1', 'PTA 2', 'C. Munck', 'Guindaste'],
@@ -981,8 +1494,25 @@
             });
         }
         
-        // Iniciar os recursos gráficos se a primeira aba for a inicial
-        initCharts();
+        // Lógica de desbloqueio do Dashboard e tratamento de senha
+        document.getElementById('btn-unlock-dash').addEventListener('click', () => {
+            const passInput = document.getElementById('dash-pass');
+            const lockScreen = document.getElementById('dashboard-lock');
+            const content = document.getElementById('dashboard-content');
+            const errorMsg = document.getElementById('pass-error');
+
+            // Senha padrão para acesso aos indicadores
+            if (passInput.value === 'admin123') {
+                lockScreen.classList.add('hidden');
+                content.classList.remove('hidden');
+                initCharts(); // Inicializa gráficos apenas após o acesso
+                clickSfx.play();
+            } else {
+                errorMsg.classList.remove('hidden');
+                passInput.value = '';
+                clickSfx.play();
+            }
+        });
 
     </script>
 </body>
