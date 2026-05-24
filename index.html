@@ -16,8 +16,6 @@
         };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Biblioteca Howler.js para efeitos sonoros -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -263,9 +261,6 @@
     <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center w-8 h-8 rounded bg-emerald-500/10 text-emerald-500">
-                    <i class="ph-fill ph-hard-hat text-xl"></i>
-                </div>
                 <h1 class="text-zinc-100 font-bold tracking-wide text-2xl uppercase hidden sm:block">
                     Agendamento de Recursos Especiais - LDC
                 </h1>
@@ -278,9 +273,6 @@
                 </button>
                 <button data-target="tab-dashboard" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-400 hover:text-zinc-100">
                     <i class="ph-bold ph-chart-bar"></i> Indicadores
-                </button>
-                <button data-target="tab-import" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-400 hover:text-zinc-100">
-                    <i class="ph-bold ph-file-arrow-up"></i> Importar
                 </button>
             </nav>
         </div>
@@ -406,9 +398,14 @@
                                 <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
                                 <p class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
                             </div>
-                            <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700 shadow-lg group">
-                                <i class="ph-bold ph-calendar-blank text-lg text-emerald-500 group-hover:scale-110 transition-transform"></i> Ver agenda
-                            </button>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="showEmergencyModal()" class="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20 shadow-lg group">
+                                    <i class="ph-bold ph-warning-octagon text-lg group-hover:scale-110 transition-transform"></i> Agendamento emergencial
+                                </button>
+                                <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700 shadow-lg group">
+                                    <i class="ph-bold ph-calendar-blank text-lg text-emerald-500 group-hover:scale-110 transition-transform"></i> Ver agenda
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="equipment-grid">
@@ -425,7 +422,7 @@
                                     <h3 class="text-2xl font-bold text-zinc-100 mb-2">Quando você precisa?</h3>
                                     <p class="text-zinc-400 text-sm">Navegue pelos meses e selecione o dia ideal.</p>
                                     <!-- Aviso de Antecedência -->
-                                    <p id="date-warning" class="text-orange-500 font-bold text-[10px] uppercase mt-3 hidden items-center gap-1.5 animate-pulse bg-orange-500/5 px-3 py-1.5 rounded-lg border border-orange-500/20 w-fit">
+                                    <p id="date-warning" class="text-red-500 font-bold text-[10px] uppercase mt-3 hidden items-center gap-1.5 bg-red-500/5 px-3 py-1.5 rounded-lg border border-red-500/20 w-fit">
                                         <i class="ph-fill ph-warning-circle text-base"></i> 
                                         Atenção: Este recurso exige agendamento prévio (Mín. 1 dia).
                                     </p>
@@ -471,9 +468,9 @@
                     <div id="step-3" class="step-content pt-4 md:pt-10">
                         <div class="max-w-4xl mx-auto w-full mb-8">
                             <h3 class="text-2xl font-bold text-zinc-100 mb-2">Escolha o horário</h3>
-                            <p id="selected-day-label" class="text-emerald-500 font-bold text-xs uppercase tracking-widest">Selecione um período nos cards abaixo</p>
+                            <p id="selected-day-label" class="text-emerald-500 font-bold text-sm uppercase tracking-widest">Selecione um período nos cards abaixo</p>
                         </div>
-                        <div id="time-cards-container" class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                        <div id="time-cards-container" class="max-w-5xl mx-auto">
                             <!-- Cards de horário gerados dinamicamente -->
                         </div>
                     </div>
@@ -622,6 +619,37 @@
         </div>
     </div>
 
+    <!-- Modal de Horário Personalizado -->
+    <div id="customTimeModal" class="hidden fixed inset-0 z-[140] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full mx-auto flex items-center justify-center mb-6">
+                    <i class="ph-fill ph-clock-countdown text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Horário Customizado</h3>
+                <p class="text-zinc-400 text-sm mb-8">Defina o intervalo exato de uso do recurso.</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="text-left">
+                        <label class="block text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Início (Retirada)</label>
+                        <input type="text" id="custom-start" maxlength="5" placeholder="08:00" oninput="detectPeriod(this, 'start-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
+                        <span id="start-period" class="text-[9px] font-bold uppercase mt-2 block ml-1 text-zinc-600 tracking-tighter">--</span>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Fim (Devolução)</label>
+                        <input type="text" id="custom-end" maxlength="5" placeholder="17:00" oninput="detectPeriod(this, 'end-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
+                        <span id="end-period" class="text-[9px] font-bold uppercase mt-2 block ml-1 text-zinc-600 tracking-tighter">--</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeCustomTimeModal()" class="flex-1 py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold text-xs uppercase transition-all">Cancelar</button>
+                    <button onclick="saveCustomTime()" class="flex-1 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase shadow-lg shadow-emerald-500/20 transition-all">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Agenda Geral -->
     <div id="generalAgendaModal" class="hidden fixed inset-0 z-[120] items-center justify-center bg-black/80 backdrop-blur-md p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[95vh]">
@@ -659,6 +687,27 @@
         </div>
     </div>
 
+    <!-- Modal de Agendamento Emergencial -->
+    <div id="emergencyModal" class="hidden fixed inset-0 z-[140] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 bg-red-500/10 text-red-500 rounded-full mx-auto flex items-center justify-center mb-6">
+                    <i class="ph-fill ph-warning-octagon text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tighter">Agendamento Emergencial</h3>
+                <div class="bg-zinc-950 p-6 rounded-2xl border border-zinc-800 text-center mb-8">
+                    <p class="text-zinc-400 text-xs uppercase font-bold tracking-widest mb-3">Instruções</p>
+                    <p class="text-zinc-100 leading-relaxed">
+                        Para agendamentos emergenciais, favor procurar por:<br>
+                        <span class="text-emerald-400 font-bold text-lg block mt-2">Luis Guilherme Oliveira Paiva Taveira</span>
+                        na <span class="text-white font-bold">sala do PCM</span>.
+                    </p>
+                </div>
+                <button onclick="closeEmergencyModal()" class="w-full py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-sm uppercase transition-all">Entendido</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal / Toast de Notificação -->
     <div id="toastMessage" class="toast flex items-center gap-3 bg-zinc-800 border border-zinc-700 shadow-2xl rounded-xl p-4 text-zinc-100 max-w-sm w-full mx-4">
         <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-full shrink-0">
@@ -673,12 +722,45 @@
     <!-- Script Principal da Aplicação Vanilla -->
     <script>
         // ------------------
-        // Configuração do Efeito Sonoro (Click Pop)
+        // Motor de Som Sintetizado (Nativo - Sem Erros de Carregamento)
         // ------------------
-        const clickSfx = new Howl({
-            src: ['data:audio/wav;base64,UklGRpAWAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YVwWAAD//wEAAQAAAAAAAP//AQABAAAAAA=='],
-            volume: 1.0
-        });
+        const sfx = (() => {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const playTone = (freq, type, duration, volume = 0.1) => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            };
+
+            return {
+                click: { play: () => playTone(800, 'sine', 0.1, 0.1) },
+                pop: { play: () => playTone(600, 'sine', 0.15, 0.15) },
+                step: { play: () => playTone(400, 'triangle', 0.1, 0.1) },
+                success: { 
+                    play: () => {
+                        playTone(523.25, 'sine', 0.2, 0.1); // C5
+                        setTimeout(() => playTone(659.25, 'sine', 0.4, 0.1), 100); // E5
+                    }
+                },
+                error: { 
+                    play: () => { playTone(150, 'sawtooth', 0.3, 0.05); playTone(110, 'sawtooth', 0.3, 0.05); } 
+                }
+            };
+        })();
 
         // Mock de Reservas Existentes (Poderia vir do LocalStorage ou Banco)
         let reservations = [];
@@ -782,7 +864,7 @@
             const d = new Date(calendarView.year, calendarView.month);
             calendarView.month = d.getMonth();
             calendarView.year = d.getFullYear();
-            clickSfx.play();
+            sfx.click.play();
             renderCalendar();
         }
 
@@ -795,20 +877,32 @@
 
         function renderTimeCards() {
             const periods = [
-                { id: 'manha', label: 'Manhã', icon: 'ph-sun', start: '08:00', end: '12:00', color: 'emerald' },
-                { id: 'tarde', label: 'Tarde', icon: 'ph-cloud-sun', start: '13:00', end: '17:00', color: 'amber' },
-                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'sky' }
+                { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '08:00', end: '12:00', color: 'blue' },
+                { id: 'tarde', label: 'Tarde', icon: 'ph-sun', start: '13:00', end: '17:00', color: 'orange' },
+                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'indigo' },
+                { id: 'custom', label: 'Personalizado', icon: 'ph-clock-countdown', color: 'emerald' }
             ];
 
-            timeCardsContainer.innerHTML = periods.map(p => {
+            timeCardsContainer.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full px-2">` + periods.map(p => {
                 const eqpInfo = equipments.find(e => e.id === state.eqp);
-                const isSelected = state.timeStart === p.start && state.timeEnd === p.end;
-                const vividColor = isSelected ? `bg-${p.color}-500` : 'bg-zinc-800';
                 
-                // 1. Verificação de Ocupação Real usando a nova função segura
-                const slotStart = getSafeTimestamp(state.date, p.start);
-                const slotEnd = getSafeTimestamp(state.date, p.end);
+                const isCustom = p.id === 'custom';
+                const isSelected = isCustom ? state.isCustomTime : (!state.isCustomTime && state.timeStart === p.start && state.timeEnd === p.end);
 
+                const pStart = isCustom ? (state.isCustomTime ? state.timeStart : '00:00') : p.start;
+                const pEnd = isCustom ? (state.isCustomTime ? state.timeEnd : '23:59') : p.end;
+                
+                // Função interna para formatar 24h -> 12h na exibição do card
+                const formatTo12h = (t) => {
+                    if (!t) return '--:--';
+                    const [h, m] = t.split(':');
+                    return `${pad(parseInt(h))}:${m}`;
+                };
+                
+                const slotStart = getSafeTimestamp(state.date, pStart);
+                const slotEnd = getSafeTimestamp(state.date, pEnd);
+
+                // Só marca como ocupado se o horário já estiver definido (seja fixo ou customizado já salvo)
                 const isOccupied = reservations.some(res => {
                     if (res.resourceId !== state.eqp) return false;
                     const resStart = new Date(res.start).getTime();
@@ -831,27 +925,127 @@
                 }
 
                 const finalDisabled = isOccupied || isLeadTimeLocked;
+                const color = p.color;
+
+                // Estilização baseada no design dos cards de equipamentos
+                const cardClasses = isSelected 
+                    ? `bg-zinc-900 border-${color}-500 shadow-2xl ring-4 ring-${color}-500/10 scale-[1.02]` 
+                    : `bg-zinc-900/40 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/80 hover:scale-[1.02]`;
+
+                const iconClasses = isSelected
+                    ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/40 scale-110 rotate-3`
+                    : `bg-zinc-800 text-zinc-500`;
 
                 return `
                     <button type="button" 
-                        ${finalDisabled ? 'disabled' : `onclick="selectPeriod('${p.start}', '${p.end}')"`}
-                        class="flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all duration-150
-                        ${isSelected ? 'border-emerald-500 bg-zinc-800 scale-105 shadow-xl' : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700'}
-                        ${finalDisabled ? 'opacity-40 grayscale cursor-not-allowed' : ''}">
-                        <div class="w-12 h-12 rounded-full mb-4 flex items-center justify-center ${finalDisabled ? 'bg-zinc-700' : vividColor} text-white transition-all duration-150">
-                            <i class="ph-bold ${p.icon} text-xl"></i>
+                        ${finalDisabled ? 'disabled' : `onclick="selectPeriod('${p.start || ''}', '${p.end || ''}', ${isCustom})"`}
+                        class="flex flex-col items-center justify-center p-6 lg:p-8 rounded-[2rem] border-2 transition-all duration-200
+                        ${cardClasses} ${finalDisabled ? 'opacity-40 grayscale cursor-not-allowed' : ''}">
+                        
+                        <div class="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl mb-4 flex items-center justify-center ${finalDisabled ? 'bg-zinc-700 text-zinc-500' : iconClasses} transition-all duration-500">
+                            <i class="ph-bold ${p.icon} text-2xl lg:text-3xl"></i>
                         </div>
-                        <span class="block text-lg font-bold text-zinc-100">${p.label}</span>
-                        <span class="text-zinc-500 text-xs mt-1">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO (D+1)' : p.start + ' às ' + p.end)}</span>
+                        <span class="block text-base lg:text-lg font-black text-zinc-100 uppercase tracking-tighter">${p.label}</span>
+                        <span class="text-zinc-500 text-[10px] font-bold mt-2 uppercase tracking-widest text-center">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO (D+1)' : (isCustom && !state.isCustomTime ? 'Configurar' : formatTo12h(pStart) + ' às ' + formatTo12h(pEnd)))}</span>
                     </button>
                 `;
-            }).join('');
+            }).join('') + `</div>`;
         }
 
-        window.selectPeriod = function(start, end) {
+        window.selectPeriod = function(start, end, isCustom = false) {
+            if (isCustom) {
+                showCustomTimeModal();
+                return;
+            }
             state.timeStart = start;
             state.timeEnd = end;
-            clickSfx.play();
+            state.isCustomTime = false;
+            sfx.click.play();
+            renderTimeCards();
+            validateStep();
+        }
+
+        // Lógica do Modal de Horário Personalizado
+        window.showCustomTimeModal = function() {
+            const modal = document.getElementById('customTimeModal');
+            document.getElementById('custom-start').value = state.isCustomTime ? state.timeStart : '';
+            document.getElementById('custom-end').value = state.isCustomTime ? state.timeEnd : '';
+            
+            detectPeriod(document.getElementById('custom-start'), 'start-period');
+            detectPeriod(document.getElementById('custom-end'), 'end-period');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            sfx.pop.play();
+        }
+
+        window.closeCustomTimeModal = function() {
+            document.getElementById('customTimeModal').classList.add('hidden');
+            sfx.click.play();
+        }
+
+        window.detectPeriod = function(input, targetId) {
+            let val = input.value;
+            // Auto-colon: Adiciona ":" após os primeiros 2 dígitos
+            if (val.length === 2 && !val.includes(':') && event.inputType !== 'deleteContentBackward') {
+                input.value = val + ':';
+                val = input.value;
+            }
+
+            const target = document.getElementById(targetId);
+            if (!val) {
+                target.textContent = '--';
+                target.className = 'text-[10px] font-bold uppercase mt-2 block ml-1 text-zinc-600';
+                return;
+            }
+            
+            const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+            if (!timeRegex.test(val)) return;
+
+            const [h, m] = val.split(':');
+            const hour = parseInt(h);
+
+            let period = "";
+            let color = "";
+
+            if (hour >= 0 && hour <= 4) {
+                period = "Madrugada";
+                color = "text-indigo-400";
+            } else if (hour >= 5 && hour < 12) {
+                period = "Manhã";
+                color = "text-blue-400";
+            } else if (hour >= 12 && hour < 19) {
+                period = "Tarde";
+                color = "text-orange-400";
+            } else {
+                period = "Noite";
+                color = "text-purple-400";
+            }
+
+            target.textContent = `${pad(hour)}:${m} (${period})`;
+            target.className = `text-[11px] font-black uppercase mt-2 block ml-1 ${color} tracking-tighter`;
+        }
+
+        window.saveCustomTime = function() {
+            const start = document.getElementById('custom-start').value;
+            const end = document.getElementById('custom-end').value;
+            
+            if(!start || !end) {
+                showToast('Atenção', 'Por favor, preencha os dois horários.');
+                return;
+            }
+            
+            if(start >= end) {
+                showToast('Erro de Horário', 'O horário de início deve ser anterior ao fim.');
+                return;
+            }
+
+            state.timeStart = start;
+            state.timeEnd = end;
+            state.isCustomTime = true;
+            
+            document.getElementById('customTimeModal').classList.add('hidden');
+            sfx.success.play();
             renderTimeCards();
             validateStep();
         }
@@ -879,7 +1073,7 @@
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            clickSfx.play();
+            sfx.pop.play();
         }
 
         window.closeResDetail = () => document.getElementById('resDetailModal').classList.add('hidden');
@@ -895,7 +1089,7 @@
             const d = new Date(generalAgendaView.year, generalAgendaView.month);
             generalAgendaView.month = d.getMonth();
             generalAgendaView.year = d.getFullYear();
-            clickSfx.play();
+            sfx.click.play();
             renderGeneralAgendaCalendar();
         }
 
@@ -954,7 +1148,7 @@
             generalAgendaView.month = now.getMonth();
             generalAgendaView.year = now.getFullYear();
             
-            clickSfx.play();
+            sfx.pop.play();
             renderGeneralAgendaCalendar();
             
             modal.classList.remove('hidden');
@@ -976,7 +1170,7 @@
                 // Primeiro mostra o modal para o navegador calcular o layout
                 deniedModal.classList.remove('hidden');
                 deniedModal.classList.add('flex');
-                clickSfx.play();
+                sfx.error.play();
                 
                 document.getElementById('btn-close-denied-hoje').onclick = () => {
                     deniedModal.classList.add('hidden');
@@ -988,7 +1182,7 @@
             const modal = document.getElementById('confirmHojeModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            clickSfx.play();
+            sfx.pop.play();
             
             document.getElementById('btn-cancel-hoje').onclick = () => {
                 modal.classList.add('hidden');
@@ -1008,7 +1202,7 @@
         window.selectDate = function(dateStr) {
             state.date = dateStr;
             document.getElementById('date-input').value = dateStr;
-            clickSfx.play();
+            sfx.click.play();
             renderCalendar();
             validateStep();
         }
@@ -1022,12 +1216,14 @@
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 navBtns.forEach(b => {
-                    b.classList.remove('bg-zinc-800', 'text-zinc-100', 'bg-emerald-500/15', 'text-emerald-400');
-                    b.classList.add('text-zinc-400');
+                    b.classList.remove('bg-zinc-800', 'text-zinc-100', 'bg-emerald-500/15', 'text-emerald-400', 'active');
+                    b.classList.add('text-zinc-400', 'hover:text-zinc-100');
                     b.classList.remove('active');
                 });
                 
                 const target = btn.getAttribute('data-target');
+                sfx.step.play();
+
                 if(target === 'tab-new'){
                     btn.classList.add('bg-emerald-500/15', 'text-emerald-400');
                 } else {
@@ -1061,6 +1257,7 @@
             date: '',
             timeStart: '08:00',
             timeEnd: '17:00',
+            isCustomTime: false,
             name: '',
             sector: '',
             eqp: null
@@ -1158,7 +1355,7 @@
         window.selectEqp = function(id) {
             if (state.eqp === id) return;
             state.eqp = id;
-            clickSfx.play();
+            sfx.click.play();
             state.date = ''; dateInput.value = '';
             // Reseta para o mês atual ao mudar de equipamento
             calendarView.month = new Date().getMonth();
@@ -1246,17 +1443,28 @@
                 const [y,m,d] = state.date.split('-');
                 document.getElementById('res-date').textContent = `${d}/${m}/${y}`;
             }
-            document.getElementById('res-start').textContent = state.timeStart || '-';
-            document.getElementById('res-end').textContent = state.timeEnd || '-';
+
+            // Helper para o sumário final usar o novo formato 12h
+            const formatSummaryTime = (t) => {
+                if (!t || t === '-') return '-';
+                const [h, m] = t.split(':');
+                const hh = parseInt(h);
+                return `${pad(hh)}:${m}`;
+            };
+
+            document.getElementById('res-start').textContent = formatSummaryTime(state.timeStart);
+            document.getElementById('res-end').textContent = formatSummaryTime(state.timeEnd);
         }
 
         btnNext.addEventListener('click', () => {
             if (state.step < 4) { 
-                state.step++; 
-                updateStepUI(); 
+                state.step++;
+                sfx.step.play();
+                updateStepUI();
             }
         });
         btnPrev.addEventListener('click', () => {
+            sfx.step.play();
             if (state.step > 1) { 
                 state.step--; 
                 updateStepUI(); 
@@ -1271,6 +1479,10 @@
             document.getElementById('toast-title').textContent = title;
             document.getElementById('toast-desc').textContent = desc;
             t.classList.add('show');
+            
+            if (title.toLowerCase().includes('erro') || title.toLowerCase().includes('negado')) sfx.error.play();
+            else sfx.success.play();
+
             setTimeout(() => t.classList.remove('show'), 4000);
         }
 
@@ -1471,14 +1683,27 @@
                 lockScreen.classList.add('hidden');
                 content.classList.remove('hidden');
                 initCharts(); // Inicializa gráficos apenas após o acesso
-                clickSfx.play();
+                sfx.success.play();
             } else {
                 errorMsg.classList.remove('hidden');
                 passInput.value = '';
-                clickSfx.play();
+                sfx.error.play();
             }
         });
 
+        // Lógica do Modal Emergencial
+        window.showEmergencyModal = function() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            sfx.pop.play();
+        }
+        window.closeEmergencyModal = function() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            sfx.click.play();
+        }
     </script>
 </body>
 </html>
