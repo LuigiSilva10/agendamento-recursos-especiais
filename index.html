@@ -163,6 +163,15 @@
         .fc-v-event { background-color: #10b981 !important; border: none !important; border-left: 3px solid #059669 !important; }
         .fc-event-title { font-weight: 700; }
 
+        /* Glassmorphism & Neon Effects */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(24, 24, 27, 0.8) 0%, rgba(9, 9, 11, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .metric-glow { filter: drop-shadow(0 0 8px currentColor); }
+
         /* Status Pulse Animation */
         @keyframes status-pulse {
             0% { transform: scale(1); opacity: 1; }
@@ -317,50 +326,54 @@
                 <!-- ABA 1: Visão Geral -->
                 <div id="dash-overview" class="dash-sub-content space-y-6">
             <!-- Métricas -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
-                    <div class="p-3 rounded-lg bg-zinc-950 text-emerald-500"><i class="ph-fill ph-clock text-2xl"></i></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+                <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border-t-2 border-t-emerald-500/50 transition-all">
+                    <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 metric-glow transition-all"><i class="ph-bold ph-clock text-2xl"></i></div>
                     <div>
-                        <p class="text-zinc-400 text-sm font-medium">Total Horas</p>
-                        <p id="metric-total-hours" class="text-2xl font-bold text-zinc-100">0h</p>
+                        <p class="text-zinc-500 text-[10px] uppercase font-black tracking-widest">Total Horas</p>
+                        <p id="metric-total-hours" class="text-3xl font-black text-white tracking-tighter">0h</p>
                     </div>
                 </div>
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
-                    <div class="p-3 rounded-lg bg-zinc-950 text-zinc-300"><i class="ph-fill ph-activity text-2xl"></i></div>
+                <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border-t-2 border-t-sky-500/50 transition-all">
+                    <div class="p-3 rounded-xl bg-sky-500/10 text-sky-500 metric-glow transition-all"><i class="ph-bold ph-lightning text-2xl"></i></div>
                     <div>
-                        <p class="text-zinc-400 text-sm font-medium">Horas Normais</p>
-                        <p id="metric-normal-hours" class="text-2xl font-bold text-zinc-100">0h</p>
+                        <p class="text-zinc-500 text-[10px] uppercase font-black tracking-widest">H. Normais</p>
+                        <p id="metric-normal-hours" class="text-3xl font-black text-white tracking-tighter">0h</p>
                     </div>
                 </div>
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
-                    <div class="p-3 rounded-lg bg-zinc-950 text-amber-500"><i class="ph-fill ph-file-text text-2xl"></i></div>
+                <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border-t-2 border-t-amber-500/50 transition-all">
+                    <div class="p-3 rounded-xl bg-amber-500/10 text-amber-500 metric-glow transition-all"><i class="ph-bold ph-trend-up text-2xl"></i></div>
                     <div>
-                        <p class="text-zinc-400 text-sm font-medium">Horas Extras</p>
-                        <p id="metric-extra-hours" class="text-2xl font-bold text-zinc-100">0h</p>
+                        <p class="text-zinc-500 text-[10px] uppercase font-black tracking-widest">H. Extras</p>
+                        <p id="metric-extra-hours" class="text-3xl font-black text-white tracking-tighter">0h</p>
                     </div>
                 </div>
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
-                    <div class="p-3 rounded-lg bg-zinc-950 text-zinc-400"><i class="ph-fill ph-list-numbers text-2xl"></i></div>
+                <div class="glass-card p-5 rounded-2xl flex items-center gap-4 border-t-2 border-t-indigo-500/50 transition-all">
+                    <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-500 metric-glow transition-all"><i class="ph-bold ph-hash text-2xl"></i></div>
                     <div>
-                        <p class="text-zinc-400 text-sm font-medium">Registros Listados</p>
-                        <p id="metric-total-records" class="text-2xl font-bold text-zinc-100">0</p>
+                        <p class="text-zinc-500 text-[10px] uppercase font-black tracking-widest">Registros</p>
+                        <p id="metric-total-records" class="text-3xl font-black text-white tracking-tighter">0</p>
                     </div>
                 </div>
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4 relative overflow-hidden group">
-                    <div class="p-3 rounded-lg bg-zinc-950 text-sky-500"><i class="ph-fill ph-database text-2xl"></i></div>
+                <div class="glass-card p-5 rounded-2xl flex items-center gap-4 relative overflow-hidden border-t-2 border-t-zinc-700/50">
+                    <div class="p-3 rounded-xl bg-zinc-800 text-zinc-400 transition-all"><i class="ph-bold ph-database text-2xl"></i></div>
                     <div class="z-10">
-                        <p class="text-zinc-400 text-xs font-medium uppercase flex items-center gap-2">Status: <span id="db-status-label" class="text-zinc-100">--</span> <span id="db-pulse" class="w-2 h-2 rounded-full bg-zinc-500 animate-status-pulse"></span></p>
-                        <p id="db-usage-text" class="text-xl font-bold text-zinc-100">-- KB</p>
-                        <p id="db-latency" class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-1">Latência: --ms</p>
+                        <p class="text-zinc-500 text-[10px] uppercase font-black tracking-widest flex items-center gap-2">DB: <span id="db-status-label" class="text-zinc-300">--</span> <span id="db-pulse" class="w-2 h-2 rounded-full bg-zinc-500 animate-status-pulse"></span></p>
+                        <p id="db-usage-text" class="text-xl font-black text-white">-- KB</p>
+                        <p id="db-latency" class="text-[9px] font-black uppercase tracking-widest mt-1">-- ms</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Gráficos -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Tendência -->
-                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
-                    <h3 class="text-lg font-medium text-zinc-100 mb-6">Análise de Tendência Diária</h3>
+                <div class="glass-card p-6 rounded-2xl border border-zinc-800/50">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-sm font-black text-zinc-100 uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-fill ph-chart-line-up text-emerald-500"></i> Tendência Semanal
+                        </h3>
+                        <span class="text-[10px] text-zinc-500 font-bold bg-zinc-950 px-2 py-1 rounded-md border border-zinc-800">HORAS / DIA</span>
+                    </div>
                     <div class="h-72 relative">
                         <canvas id="trendChart"></canvas>
                     </div>
@@ -991,6 +1004,7 @@
                 });
 
                 // Atualiza as interfaces que dependem de dados
+                renderEquipments();
                 if (state.step === 2) renderCalendar();
                 if (state.step === 3) renderTimeCards();
                 renderGeneralAgendaCalendar();
