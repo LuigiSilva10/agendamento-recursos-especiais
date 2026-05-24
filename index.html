@@ -1096,46 +1096,11 @@
         // Renderizar dinamicamente os cards de equipamento
         const eqpGrid = document.getElementById('equipment-grid');
         function renderEquipments() {
-            const d = new Date();
-            const todayStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-            const tomorrow = new Date(d);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
-
             eqpGrid.innerHTML = equipments.map(eqp => {
                 const isSelected = state.eqp === eqp.id;
-                const checkDate = eqp.advance ? tomorrowStr : todayStr;
                 
                 // Lógica de Ocupação
-                const isFullyOccupied = (function() {
-                    // REGRA CRÍTICA: Se for o Guindaste e houver QUALQUER reserva no sistema, ele trava.
-                    if (eqp.id === 'guindaste') {
-                        return reservations.some(res => res.resourceId === 'guindaste');
-                    }
-
-                    // Lógica para os demais equipamentos (baseada na data alvo)
-                    const dayRes = reservations.filter(res => 
-                        res.resourceId === eqp.id && res.start.startsWith(checkDate)
-                    );
-                    
-                    if (dayRes.length === 0) return false;
-
-                    // Verifica se algum agendamento cobre o período da manhã (08h-12h)
-                    const morningBlocked = dayRes.some(r => {
-                        const startH = parseInt(r.start.split('T')[1].split(':')[0]);
-                        const endH = parseInt(r.end.split('T')[1].split(':')[0]);
-                        return startH <= 8 && endH >= 12;
-                    });
-
-                    // Verifica se algum agendamento cobre o período da tarde (13h-17h)
-                    const afternoonBlocked = dayRes.some(r => {
-                        const startH = parseInt(r.start.split('T')[1].split(':')[0]);
-                        const endH = parseInt(r.end.split('T')[1].split(':')[0]);
-                        return startH <= 13 && endH >= 17;
-                    });
-
-                    return morningBlocked && afternoonBlocked;
-                })();
+                const isFullyOccupied = reservations.some(res => res.resourceId === eqp.id);
 
                 const vividColor = {
                     emerald: 'bg-emerald-500',
