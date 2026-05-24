@@ -164,6 +164,25 @@
         .fc-event-title { font-weight: 700; }
 
         /* Glassmorphism & Neon Effects */
+        @keyframes wind-in {
+            0% { opacity: 0; filter: blur(15px); transform: translateX(-60px) skewX(-10deg); }
+            100% { opacity: 1; filter: blur(0); transform: translateX(0) skewX(0); }
+        }
+        @keyframes wind-out {
+            0% { opacity: 1; filter: blur(0); transform: translateX(0); }
+            100% { opacity: 0; filter: blur(15px); transform: translateX(60px) skewX(10deg); }
+        }
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+        .animate-wind-in { animation: wind-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .animate-wind-out { animation: wind-out 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .animate-shake-error { animation: shake-error 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
         .glass-card {
             background: linear-gradient(135deg, rgba(24, 24, 27, 0.8) 0%, rgba(9, 9, 11, 0.9) 100%);
             backdrop-filter: blur(10px);
@@ -301,6 +320,22 @@
              DASHBOARD TAB
         ======================== -->
         <div id="tab-dashboard" class="tab-content">
+            <!-- Overlay de Boas-Vindas "Luxo" -->
+            <div id="welcome-overlay" class="hidden fixed inset-0 z-[200] items-center justify-center bg-emerald-950/95 backdrop-blur-3xl">
+                <div class="text-center">
+                    <p id="welcome-greeting" class="text-emerald-400 font-bold text-sm uppercase tracking-[0.5em] mb-4"></p>
+                    <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Seja bem vindo.</h2>
+                </div>
+            </div>
+
+            <!-- Overlay de Acesso Negado "Luxo" -->
+            <div id="denial-overlay" class="hidden fixed inset-0 z-[200] items-center justify-center bg-red-950/90 backdrop-blur-3xl">
+                <div class="text-center">
+                    <p class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
+                    <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
+                </div>
+            </div>
+
             <!-- Tela de Bloqueio por Senha -->
             <div id="dashboard-lock" class="flex flex-col items-center justify-center h-full text-center py-20">
                 <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mb-6 text-zinc-500">
@@ -318,9 +353,8 @@
             <div id="dashboard-content" class="hidden space-y-6">
                 <!-- Sub-menu do Dashboard -->
                 <div class="flex items-center gap-2 border-b border-zinc-800 pb-4 overflow-x-auto no-scrollbar">
-                    <button onclick="switchDashTab('overview')" class="dash-tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all bg-zinc-800 text-zinc-100">Visão Geral</button>
-                    <button onclick="switchDashTab('details')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Itens Específicos</button>
-                    <button onclick="switchDashTab('settings')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Configurações</button>
+                    <button onclick="switchDashTab(event, 'overview')" class="dash-tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all bg-zinc-800 text-zinc-100">Visão Geral</button>
+                    <button onclick="switchDashTab(event, 'settings')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Configurações</button>
                 </div>
 
                 <!-- ABA 1: Visão Geral -->
@@ -365,8 +399,6 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Tendência -->
                 <div class="glass-card p-6 rounded-2xl border border-zinc-800/50">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-sm font-black text-zinc-100 uppercase tracking-widest flex items-center gap-2">
@@ -409,26 +441,6 @@
                          <canvas id="pieChart"></canvas>
                     </div>
                 </div>
-                </div>
-
-                <!-- ABA 2: Detalhes -->
-                <div id="dash-details" class="dash-sub-content hidden space-y-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
-                            <h3 class="text-lg font-medium text-zinc-100 mb-6">Ranking de Solicitantes</h3>
-                            <div class="h-72 relative">
-                                <canvas id="rankingChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex flex-col items-center">
-                            <h3 class="text-lg font-medium text-zinc-100 mb-6 w-full text-left">Distribuição Operacional</h3>
-                            <div class="w-full h-72 relative">
-                                <canvas id="pieChartCopy"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- ABA 3: Configurações -->
                 <div id="dash-settings" class="dash-sub-content hidden space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -445,14 +457,32 @@
                             </div>
                         </div>
                         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-gear text-emerald-500"></i> Funcionalidades</h3>
-                            <div class="space-y-4">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-gear text-emerald-500"></i> Funções do Sistema</h3>
+                            <div class="space-y-3">
                                 <div class="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800">
                                     <div>
                                         <p class="text-zinc-100 text-sm font-bold">Botão Emergencial</p>
                                         <p class="text-zinc-500 text-xs">Habilitar visualização no wizard.</p>
                                     </div>
                                     <button id="toggle-emergency" onclick="updateConfig('emergency')" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-all">
+                                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+                                    <div>
+                                        <p class="text-zinc-100 text-sm font-bold">Agenda Geral</p>
+                                        <p class="text-zinc-500 text-xs">Permitir consulta ao calendário global.</p>
+                                    </div>
+                                    <button id="toggle-agenda" onclick="updateConfig('agenda')" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-all">
+                                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+                                    <div>
+                                        <p class="text-zinc-100 text-sm font-bold">Efeitos Sonoros</p>
+                                        <p class="text-zinc-500 text-xs">Habilitar feedback auditivo nas ações.</p>
+                                    </div>
+                                    <button id="toggle-sfx" onclick="updateConfig('sfx')" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-all">
                                         <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
                                     </button>
                                 </div>
@@ -494,7 +524,7 @@
                             <button id="btn-emergency-global" onclick="showEmergencyModal()" class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20">
                                 <i class="ph-bold ph-warning-octagon text-base"></i> Emergencial
                             </button>
-                            <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700">
+                            <button id="btn-agenda-global" onclick="showGeneralAgenda()" class="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700">
                                 <i class="ph-bold ph-calendar-blank text-base text-emerald-500"></i> Ver agenda
                             </button>
                         </div>
@@ -860,6 +890,7 @@
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             
             const playTone = (freq, type, duration, volume = 0.1) => {
+                if (!appConfig || !appConfig.sfxEnabled) return;
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 
                 const osc = audioCtx.createOscillator();
@@ -906,6 +937,8 @@
         let appConfig = {
             password: '0001',
             emergencyEnabled: true,
+            agendaEnabled: true,
+            sfxEnabled: true,
             eqpSettings: {} // Mapeia id do equipamento -> { advance: boolean }
         };
 
@@ -1060,19 +1093,20 @@
         // ------------------
         // Lógica de Sub-Abas do Dashboard
         // ------------------
-        window.switchDashTab = function(tabId) {
+        window.switchDashTab = function(e, tabId) {
             document.querySelectorAll('.dash-tab-btn').forEach(btn => {
                 btn.classList.remove('bg-zinc-800', 'text-zinc-100');
                 btn.classList.add('text-zinc-500');
             });
-            event.currentTarget.classList.add('bg-zinc-800', 'text-zinc-100');
-            event.currentTarget.classList.remove('text-zinc-500');
+            e.currentTarget.classList.add('bg-zinc-800', 'text-zinc-100');
+            e.currentTarget.classList.remove('text-zinc-500');
 
             document.querySelectorAll('.dash-sub-content').forEach(content => content.classList.add('hidden'));
             document.getElementById(`dash-${tabId}`).classList.remove('hidden');
 
-            if(tabId === 'overview' || tabId === 'details') initCharts();
+            if(tabId === 'overview') initCharts();
             if(tabId === 'settings') renderSettingsEqp();
+            applyConfigUI(); // Garante que os toggles estejam na posição correta
         };
 
         function initSettings() {
@@ -1119,34 +1153,51 @@
                 appConfig.emergencyEnabled = !appConfig.emergencyEnabled;
                 applyConfigUI();
             }
+            if(type === 'agenda') {
+                appConfig.agendaEnabled = !appConfig.agendaEnabled;
+                applyConfigUI();
+            }
+            if(type === 'sfx') {
+                appConfig.sfxEnabled = !appConfig.sfxEnabled;
+                applyConfigUI();
+            }
             sfx.success.play();
         };
 
         function applyConfigUI() {
             // Botão Emergencial
             const btn = document.getElementById('btn-emergency-global');
-            if(btn) {
-                if(appConfig.emergencyEnabled) btn.classList.remove('hidden');
-                else btn.classList.add('hidden');
-            }
+            const btnAgenda = document.getElementById('btn-agenda-global');
+            
+            if(btn) btn.classList.toggle('hidden', !appConfig.emergencyEnabled);
+            if(btnAgenda) btnAgenda.classList.toggle('hidden', !appConfig.agendaEnabled);
 
-            // Switch de Emergência no Settings
-            const toggle = document.getElementById('toggle-emergency');
-            if(toggle) {
-                const circle = toggle.querySelector('div');
-                if(appConfig.emergencyEnabled) {
-                toggle.classList.replace('bg-zinc-800', 'bg-emerald-600');
-                circle.classList.replace('left-1', 'right-1');
-            } else {
-                toggle.classList.replace('bg-emerald-600', 'bg-zinc-800');
-                circle.classList.replace('right-1', 'left-1');
-            }
-            }
+            // Toggles do Settings
+            const setupToggle = (id, enabled) => {
+                const toggle = document.getElementById(id);
+                if(toggle) {
+                    const circle = toggle.querySelector('div');
+                    if(enabled) {
+                        toggle.classList.remove('bg-zinc-800'); toggle.classList.add('bg-emerald-600');
+                        circle.classList.remove('left-1'); circle.classList.add('right-1');
+                    } else {
+                        toggle.classList.remove('bg-emerald-600'); toggle.classList.add('bg-zinc-800');
+                        circle.classList.remove('right-1'); circle.classList.add('left-1');
+                    }
+                }
+            };
+
+            setupToggle('toggle-emergency', appConfig.emergencyEnabled);
+            setupToggle('toggle-agenda', appConfig.agendaEnabled);
+            setupToggle('toggle-sfx', appConfig.sfxEnabled);
 
             // Atualiza os dados de 'advance' no array original para que renderEquipments use
             equipments.forEach(eqp => {
                 eqp.advance = appConfig.eqpSettings[eqp.id].advance;
             });
+            
+            // Atualiza a visualização do agendamento se estiver visível
+            renderEquipments();
         }
 
         // ------------------
@@ -1617,7 +1668,13 @@
                     if (content.id === target) {
                         content.classList.add('active');
                         // Se abrir o dashboard, garanta que os gráficos renderizem
-                        if(target === 'tab-dashboard') initCharts();
+                        if(target === 'tab-dashboard') {
+                            initCharts();
+                            // Foco automático no input de senha
+                            setTimeout(() => {
+                                document.getElementById('dash-pass').focus();
+                            }, 100);
+                        }
                     }
                 });
             });
@@ -2160,17 +2217,58 @@
             const lockScreen = document.getElementById('dashboard-lock');
             const content = document.getElementById('dashboard-content');
             const errorMsg = document.getElementById('pass-error');
+            const welcomeOverlay = document.getElementById('welcome-overlay');
+            const welcomeGreeting = document.getElementById('welcome-greeting');
+            const denialOverlay = document.getElementById('denial-overlay');
+
+            const getGreeting = () => {
+                const hour = new Date().getHours();
+                if (hour >= 5 && hour < 12) return "Bom dia";
+                if (hour >= 12 && hour < 18) return "Boa tarde";
+                return "Boa noite";
+            };
 
             // Senha padrão para acesso aos indicadores
             if (passInput.value === appConfig.password) {
-                lockScreen.classList.add('hidden');
-                content.classList.remove('hidden');
-                initCharts(); // Inicializa gráficos apenas após o acesso
+                // Inicia transição de luxo
+                welcomeGreeting.textContent = getGreeting();
+                welcomeOverlay.classList.remove('hidden');
+                welcomeOverlay.classList.add('flex', 'animate-wind-in');
                 sfx.success.play();
+
+                // Prepara o dashboard por trás
+                setTimeout(() => {
+                    lockScreen.classList.add('hidden');
+                    content.classList.remove('hidden');
+                    initCharts();
+                }, 500);
+
+                // Desaparece devagar
+                setTimeout(() => {
+                    welcomeOverlay.classList.replace('animate-wind-in', 'animate-wind-out');
+                    setTimeout(() => {
+                        welcomeOverlay.classList.add('hidden');
+                        welcomeOverlay.classList.remove('flex', 'animate-wind-out');
+                    }, 1500);
+                }, 2500);
+
             } else {
-                errorMsg.classList.remove('hidden');
-                passInput.value = '';
+                // Transição de erro sofisticada (Vermelha)
+                denialOverlay.classList.remove('hidden');
+                denialOverlay.classList.add('flex', 'animate-luxury-in');
+                
+                lockScreen.classList.add('animate-shake-error');
                 sfx.error.play();
+                passInput.value = '';
+
+                setTimeout(() => {
+                    denialOverlay.classList.replace('animate-luxury-in', 'animate-luxury-out');
+                    setTimeout(() => {
+                        denialOverlay.classList.add('hidden');
+                        denialOverlay.classList.remove('flex', 'animate-luxury-out');
+                        lockScreen.classList.remove('animate-shake-error');
+                    }, 1500);
+                }, 1800);
             }
         });
 
