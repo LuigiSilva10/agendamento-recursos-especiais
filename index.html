@@ -381,10 +381,30 @@
         <div id="tab-new" class="tab-content active">
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl w-full max-w-[1500px] h-[85vh] max-h-[850px] flex flex-col">
                 <!-- Cabeçalho (Passos e Barras de Progresso) -->
-                <div class="mb-6">
-                    <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Passo <span id="current-step-text">1</span> de 4</p>
-                    <div class="w-full bg-zinc-950 rounded-full h-1.5 mb-6">
-                        <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 33%"></div>
+                <div class="mb-6 flex flex-col gap-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Progresso: <span id="current-step-text">1</span> de 5</p>
+                            <div class="w-full bg-zinc-950 rounded-full h-1.5">
+                                <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- HUD Global de Títulos -->
+                    <div class="text-left shrink-0 px-2 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 id="step-title" class="text-2xl font-bold text-zinc-100 mb-1">Qual recurso você precisa?</h3>
+                            <p id="step-desc" class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 shrink-0 items-center">
+                            <button onclick="showEmergencyModal()" class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-[10px] font-bold uppercase transition-all border border-red-500/20">
+                                <i class="ph-bold ph-warning-octagon text-base"></i> Emergencial
+                            </button>
+                            <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-[10px] font-bold uppercase transition-all border border-zinc-700">
+                                <i class="ph-bold ph-calendar-blank text-base text-emerald-500"></i> Ver agenda
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -393,21 +413,6 @@
                     
                     <!-- Passo 1: Seleção de Equipamento (Agora o Primeiro) -->
                     <div id="step-1" class="step-content active max-w-6xl mx-auto w-full pt-4 md:pt-10">
-                        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-8">
-                            <div>
-                                <h3 class="text-2xl font-bold text-zinc-100 mb-2">Qual recurso você precisa?</h3>
-                                <p class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
-                            </div>
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="showEmergencyModal()" class="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20 shadow-lg group">
-                                    <i class="ph-bold ph-warning-octagon text-lg group-hover:scale-110 transition-transform"></i> Agendamento emergencial
-                                </button>
-                                <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700 shadow-lg group">
-                                    <i class="ph-bold ph-calendar-blank text-lg text-emerald-500 group-hover:scale-110 transition-transform"></i> Ver agenda
-                                </button>
-                            </div>
-                        </div>
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="equipment-grid">
                             <!-- Cards gerados pelo JavaScript com cores vivas e animação -->
                         </div>
@@ -419,8 +424,6 @@
                         <div class="sticky top-0 bg-zinc-900 z-40 pt-2 md:pt-6 pb-4 shadow-md">
                             <div class="w-full px-4 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-6">
                                 <div>
-                                    <h3 class="text-2xl font-bold text-zinc-100 mb-2">Quando você precisa?</h3>
-                                    <p class="text-zinc-400 text-sm">Navegue pelos meses e selecione o dia ideal.</p>
                                     <!-- Aviso de Antecedência -->
                                     <p id="date-warning" class="text-red-500 font-bold text-[10px] uppercase mt-3 hidden items-center gap-1.5 bg-red-500/5 px-3 py-1.5 rounded-lg border border-red-500/20 w-fit">
                                         <i class="ph-fill ph-warning-circle text-base"></i> 
@@ -466,68 +469,99 @@
 
                     <!-- Passo 3: Turnos -->
                     <div id="step-3" class="step-content pt-4 md:pt-10">
-                        <div class="max-w-4xl mx-auto w-full mb-8">
-                            <h3 class="text-2xl font-bold text-zinc-100 mb-2">Escolha o horário</h3>
-                            <p id="selected-day-label" class="text-emerald-500 font-bold text-sm uppercase tracking-widest">Selecione um período nos cards abaixo</p>
-                        </div>
+                        <p id="selected-day-label" class="max-w-4xl mx-auto w-full mb-8 text-emerald-500 font-bold text-sm uppercase tracking-widest">Selecione um período nos cards abaixo</p>
                         <div id="time-cards-container" class="max-w-5xl mx-auto">
                             <!-- Cards de horário gerados dinamicamente -->
                         </div>
                     </div>
 
-                    <!-- Passo 4: Identificação e Confirmação -->
+                    <!-- Passo 4: Identificação do Trabalho -->
                     <div id="step-4" class="step-content pt-4 md:pt-10">
-                        <h3 class="text-xl font-medium text-zinc-100 mb-6">Quem está solicitando?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-zinc-400">Nome Colaborador</label>
+                                <input id="employee-name" type="text" placeholder="Digite o nome completo" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                            </div>
+                            <div class="space-y-2 text-left">
+                                <label class="block text-sm font-medium text-zinc-400">Área que vai trabalhar</label>
+                                <select id="employee-area" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none">
+                                    <option value="" disabled selected>Selecione a área</option>
+                                    <option value="1A">Área 1A</option>
+                                    <option value="1B">Área 1B</option>
+                                    <option value="2">Área 2</option>
+                                    <option value="3">Área 3</option>
+                                    <option value="4">Área 4</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2 md:col-span-2 text-left">
+                                <label class="block text-sm font-medium text-zinc-400">Breve resumo do que irá ser feito</label>
+                                <textarea id="task-description" rows="3" placeholder="Descreva brevemente a atividade que será realizada..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-10">
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-zinc-400">Nome Completo</label>
-                                <input id="employee-name" type="text" placeholder="Ex: João da Silva" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                    <!-- Passo 5: Revisão e Confirmação -->
+                    <div id="step-5" class="step-content pt-4 md:pt-10">
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-4xl mx-auto text-left">
+                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
+                                <div onclick="goToStep(4)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Colaborador <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-name" class="text-zinc-100 font-bold">-</p>
+                                </div>
+                                <div onclick="goToStep(4)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Área de Trabalho <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-area" class="text-zinc-100 font-bold">-</p>
+                                </div>
                             </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-zinc-400">Setor / Matrícula</label>
-                                <input id="employee-sector" type="text" placeholder="Ex: Manutenção / 12345" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
+                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
+                                <div onclick="goToStep(1)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Equipamento <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-eqp" class="text-emerald-400 font-bold">-</p>
+                                </div>
+                                <div onclick="goToStep(2)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Data <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-date" class="text-zinc-100 font-bold">-</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
+                                <div onclick="goToStep(3)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Horário de Início <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-start" class="text-zinc-100 font-bold">-</p>
+                                </div>
+                                <div onclick="goToStep(3)" class="cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                    <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Horário de Fim <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                    <p id="res-end" class="text-zinc-100 font-bold">-</p>
+                                </div>
+                            </div>
+                            <div onclick="goToStep(4)" class="pt-2 cursor-pointer hover:bg-zinc-900 p-2 -m-2 rounded-xl transition-all group border border-transparent hover:border-zinc-800">
+                                <p class="text-zinc-500 text-[10px] uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors">Resumo da Atividade <i class="ph ph-pencil-simple opacity-0 group-hover:opacity-100"></i></p>
+                                <p id="res-desc" class="text-zinc-100 font-medium leading-relaxed italic">--</p>
                             </div>
                         </div>
                         
-                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-6 space-y-4 max-w-4xl text-left">
-                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Funcionário</p><p id="res-name" class="text-zinc-100 font-bold">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Setor / Matrícula</p><p id="res-sector" class="text-zinc-100 font-bold">-</p></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Equipamento</p><p id="res-eqp" class="text-emerald-400 font-bold">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Data</p><p id="res-date" class="text-zinc-100 font-bold">-</p></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Retirada</p><p id="res-start" class="text-zinc-100 font-bold">-</p></div>
-                                <div><p class="text-zinc-500 text-xs uppercase tracking-wider mb-1">Devolução</p><p id="res-end" class="text-zinc-100 font-bold">-</p></div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-4xl mt-6">
+                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-4xl mx-auto mt-6">
                             <i class="ph-fill ph-warning text-xl shrink-0"></i>
-                            <div class="text-sm">
+                            <div class="text-sm text-left">
                                 <p class="font-semibold mb-1">Aviso</p>
-                                <p>Ao confirmar, o agendamento será registrado no sistema e o equipamento ficará reservado no período selecionado.</p>
+                                <p>Ao confirmar, o recurso ficará bloqueado para outros usuários no período selecionado.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Botões de Navegação -->
-                <div class="flex justify-between items-center mt-4 pt-4 border-t border-zinc-800">
-                    <button id="btn-prev" class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-zinc-300 hover:bg-zinc-800 transition-colors invisible">
+                <div class="mt-auto pt-6 border-t border-zinc-800 flex items-center justify-between gap-4 shrink-0 px-2">
+                    <button id="btn-prev" class="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold text-xs uppercase text-zinc-400 hover:bg-zinc-800 transition-all invisible">
                         <i class="ph ph-arrow-left"></i> Voltar
                     </button>
                     
-                    <button id="btn-next" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors">
-                        Avançar <i class="ph ph-arrow-right"></i>
-                    </button>
-
-                    <button id="btn-finish" class="hidden items-center gap-2 px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all">
-                        Confirmar Ação <i class="ph-fill ph-check-circle"></i>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-next" class="flex items-center gap-3 px-12 py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95">
+                            Avançar <i class="ph-bold ph-arrow-right text-base"></i>
+                        </button>
+                        <button id="btn-finish" class="hidden items-center gap-3 px-12 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase transition-all shadow-xl shadow-emerald-500/30 hover:scale-[1.02] active:scale-95">
+                            Confirmar Ação <i class="ph-fill ph-check-circle text-lg"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -879,7 +913,7 @@
             const periods = [
                 { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '08:00', end: '12:00', color: 'blue' },
                 { id: 'tarde', label: 'Tarde', icon: 'ph-sun', start: '13:00', end: '17:00', color: 'orange' },
-                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'indigo' },
+                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'emerald' },
                 { id: 'custom', label: 'Personalizado', icon: 'ph-clock-countdown', color: 'emerald' }
             ];
 
@@ -1255,18 +1289,20 @@
         let state = {
             step: 1,
             date: '',
-            timeStart: '08:00',
-            timeEnd: '17:00',
+            timeStart: '',
+            timeEnd: '',
             isCustomTime: false,
             name: '',
-            sector: '',
+            area: '',
+            description: '',
             eqp: null
         };
 
         const dateInput = document.getElementById('date-input');
         const timeCardsContainer = document.getElementById('time-cards-container');
         const empName = document.getElementById('employee-name');
-        const empSector = document.getElementById('employee-sector');
+        const empArea = document.getElementById('employee-area');
+        const taskDesc = document.getElementById('task-description');
         
         const btnNext = document.getElementById('btn-next');
         const btnPrev = document.getElementById('btn-prev');
@@ -1364,6 +1400,12 @@
             validateStep();
         }
 
+        window.goToStep = function(stepNumber) {
+            state.step = stepNumber;
+            sfx.step.play();
+            updateStepUI();
+        };
+
         // Regras de bloqueio de botão
         function validateStep() {
             let isValid = false;
@@ -1374,14 +1416,14 @@
             } else if (state.step === 3) {
                 isValid = state.timeStart !== '';
             } else if (state.step === 4) {
-                isValid = empName.value.trim() !== '' && empSector.value.trim() !== '';
+                isValid = empName.value.trim() !== '' && empArea.value.trim() !== '' && taskDesc.value.trim() !== '';
             } else {
                 isValid = true;
             }
             btnNext.disabled = !isValid;
         }
 
-        [dateInput, empName, empSector].forEach(input => {
+        [dateInput, empName, empArea, taskDesc].forEach(input => {
             input.addEventListener('input', validateStep);
         });
 
@@ -1392,6 +1434,18 @@
             
             const currentStepEl = document.getElementById(`step-${state.step}`);
             if (currentStepEl) currentStepEl.classList.add('active');
+
+            // Atualiza Títulos e Descrições no HUD Global
+            const stepInfo = [
+                { title: 'Qual recurso você precisa?', desc: 'Selecione uma das opções abaixo para iniciar o agendamento.' },
+                { title: 'Quando você precisa?', desc: 'Navegue pelos meses e selecione o dia ideal.' },
+                { title: 'Escolha o horário', desc: 'Selecione um período nos cards abaixo.' },
+                { title: 'Quem irá utilizar?', desc: 'Informe os dados do colaborador e do local de trabalho.' },
+                { title: 'Revise os dados', desc: 'Verifique se todas as informações estão corretas antes de finalizar.' }
+            ][state.step - 1];
+
+            document.getElementById('step-title').textContent = stepInfo.title;
+            document.getElementById('step-desc').textContent = stepInfo.desc;
 
             if(state.step === 2) {
                 renderCalendar();
@@ -1413,11 +1467,11 @@
             }
             
             stepTexts.textContent = state.step;
-            progressBar.style.width = `${(state.step / 4) * 100}%`;
+            progressBar.style.width = `${(state.step / 5) * 100}%`;
             
             btnPrev.classList.toggle('invisible', state.step === 1);
             
-            if (state.step === 4) {
+            if (state.step === 5) {
                 btnNext.classList.add('hidden');
                 btnNext.classList.remove('flex');
                 btnFinish.classList.remove('hidden');
@@ -1436,7 +1490,8 @@
         function updateSummary() {
             const eqpObj = equipments.find(e => e.id === state.eqp);
             document.getElementById('res-name').textContent = empName.value;
-            document.getElementById('res-sector').textContent = empSector.value;
+            document.getElementById('res-area').textContent = empArea.value;
+            document.getElementById('res-desc').textContent = taskDesc.value || '--';
             document.getElementById('res-eqp').textContent = eqpObj ? eqpObj.name : '-';
             
             if(state.date) {
@@ -1457,7 +1512,7 @@
         }
 
         btnNext.addEventListener('click', () => {
-            if (state.step < 4) { 
+            if (state.step < 5) { 
                 state.step++;
                 sfx.step.play();
                 updateStepUI();
@@ -1509,6 +1564,8 @@
                 id: Date.now(),
                 resourceId: state.eqp,
                 requester: empName.value,
+                area: empArea.value,
+                description: taskDesc.value,
                 title: 'Indisponível: ' + empName.value,
                 start: dateInput.value + 'T' + (state.timeStart || '08:00') + ':00',
                 end: dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00',
@@ -1521,7 +1578,11 @@
             state.step = 1;
             state.eqp = null;
             state.date = '';
-            empName.value = ''; empSector.value = '';
+            state.timeStart = '';
+            state.timeEnd = '';
+            state.isCustomTime = false;
+            state.area = ''; state.description = '';
+            empName.value = ''; empArea.value = ''; taskDesc.value = '';
 
             dateInput.min = getTodayStr(); // Reseta regra de bloqueio D+1
             
