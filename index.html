@@ -163,6 +163,14 @@
         .fc-v-event { background-color: #10b981 !important; border: none !important; border-left: 3px solid #059669 !important; }
         .fc-event-title { font-weight: 700; }
 
+        /* Status Pulse Animation */
+        @keyframes status-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-status-pulse { animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
         /* Cores Dinâmicas para os Pins no Calendário */
         .bg-sky-500 { background-color: #0ea5e9; }
         .bg-orange-500 { background-color: #f97316; }
@@ -256,7 +264,7 @@
 
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="min-h-screen flex flex-col overflow-y-auto">
     <!-- Header -->
     <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -278,14 +286,14 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden p-4 md:p-8 relative">
+    <main class="flex-1 p-4 md:p-8 relative">
         
         <!-- =======================
              DASHBOARD TAB
         ======================== -->
         <div id="tab-dashboard" class="tab-content">
             <!-- Tela de Bloqueio por Senha -->
-            <div id="dashboard-lock" class="flex flex-col items-center justify-center h-full text-center">
+            <div id="dashboard-lock" class="flex flex-col items-center justify-center h-full text-center py-20">
                 <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mb-6 text-zinc-500">
                     <i class="ph-fill ph-lock-key text-4xl"></i>
                 </div>
@@ -299,34 +307,51 @@
             </div>
 
             <div id="dashboard-content" class="hidden space-y-6">
+                <!-- Sub-menu do Dashboard -->
+                <div class="flex items-center gap-2 border-b border-zinc-800 pb-4 overflow-x-auto no-scrollbar">
+                    <button onclick="switchDashTab('overview')" class="dash-tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all bg-zinc-800 text-zinc-100">Visão Geral</button>
+                    <button onclick="switchDashTab('details')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Itens Específicos</button>
+                    <button onclick="switchDashTab('settings')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Configurações</button>
+                </div>
+
+                <!-- ABA 1: Visão Geral -->
+                <div id="dash-overview" class="dash-sub-content space-y-6">
             <!-- Métricas -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
                     <div class="p-3 rounded-lg bg-zinc-950 text-emerald-500"><i class="ph-fill ph-clock text-2xl"></i></div>
                     <div>
                         <p class="text-zinc-400 text-sm font-medium">Total Horas</p>
-                        <p class="text-2xl font-bold text-zinc-100">1.240,5h</p>
+                        <p id="metric-total-hours" class="text-2xl font-bold text-zinc-100">0h</p>
                     </div>
                 </div>
                 <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
                     <div class="p-3 rounded-lg bg-zinc-950 text-zinc-300"><i class="ph-fill ph-activity text-2xl"></i></div>
                     <div>
                         <p class="text-zinc-400 text-sm font-medium">Horas Normais</p>
-                        <p class="text-2xl font-bold text-zinc-100">980,0h</p>
+                        <p id="metric-normal-hours" class="text-2xl font-bold text-zinc-100">0h</p>
                     </div>
                 </div>
                 <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
                     <div class="p-3 rounded-lg bg-zinc-950 text-amber-500"><i class="ph-fill ph-file-text text-2xl"></i></div>
                     <div>
                         <p class="text-zinc-400 text-sm font-medium">Horas Extras</p>
-                        <p class="text-2xl font-bold text-zinc-100">260,5h</p>
+                        <p id="metric-extra-hours" class="text-2xl font-bold text-zinc-100">0h</p>
                     </div>
                 </div>
                 <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4">
                     <div class="p-3 rounded-lg bg-zinc-950 text-zinc-400"><i class="ph-fill ph-list-numbers text-2xl"></i></div>
                     <div>
                         <p class="text-zinc-400 text-sm font-medium">Registros Listados</p>
-                        <p class="text-2xl font-bold text-zinc-100">142</p>
+                        <p id="metric-total-records" class="text-2xl font-bold text-zinc-100">0</p>
+                    </div>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex items-center gap-4 relative overflow-hidden group">
+                    <div class="p-3 rounded-lg bg-zinc-950 text-sky-500"><i class="ph-fill ph-database text-2xl"></i></div>
+                    <div class="z-10">
+                        <p class="text-zinc-400 text-xs font-medium uppercase flex items-center gap-2">Status: <span id="db-status-label" class="text-zinc-100">--</span> <span id="db-pulse" class="w-2 h-2 rounded-full bg-zinc-500 animate-status-pulse"></span></p>
+                        <p id="db-usage-text" class="text-xl font-bold text-zinc-100">-- KB</p>
+                        <p id="db-latency" class="text-[9px] text-zinc-500 font-black uppercase tracking-widest mt-1">Latência: --ms</p>
                     </div>
                 </div>
             </div>
@@ -354,21 +379,76 @@
                         <p class="text-sm text-zinc-400 mb-6">Proporção de uso por equipamento.</p>
                         <div class="space-y-4">
                             <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-emerald-500"></div><span class="text-zinc-300 font-medium">PTA 1</span></div><span class="text-zinc-100 font-bold">35%</span>
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-emerald-500"></div><span class="text-zinc-300 font-medium">PTA 1</span></div><span id="perc-pta1" class="text-zinc-100 font-bold">0%</span>
                             </div>
                             <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-amber-500"></div><span class="text-zinc-300 font-medium">PTA 2</span></div><span class="text-zinc-100 font-bold">25%</span>
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-sky-500"></div><span class="text-zinc-300 font-medium">PTA 2</span></div><span id="perc-pta2" class="text-zinc-100 font-bold">0%</span>
                             </div>
                             <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span class="text-zinc-300 font-medium">Munck</span></div><span class="text-zinc-100 font-bold">20%</span>
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-orange-500"></div><span class="text-zinc-300 font-medium">Munck</span></div><span id="perc-munck" class="text-zinc-100 font-bold">0%</span>
                             </div>
                             <div class="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-zinc-500"></div><span class="text-zinc-300 font-medium">Guindaste</span></div><span class="text-zinc-100 font-bold">20%</span>
+                                <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-indigo-500"></div><span class="text-zinc-300 font-medium">Guindaste</span></div><span id="perc-guindaste" class="text-zinc-100 font-bold">0%</span>
                             </div>
                         </div>
                     </div>
                     <div class="w-full md:w-1/2 h-72 relative">
                          <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+                </div>
+
+                <!-- ABA 2: Detalhes -->
+                <div id="dash-details" class="dash-sub-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-6">Ranking de Solicitantes</h3>
+                            <div class="h-72 relative">
+                                <canvas id="rankingChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-5 rounded-xl flex flex-col items-center">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-6 w-full text-left">Distribuição Operacional</h3>
+                            <div class="w-full h-72 relative">
+                                <canvas id="pieChartCopy"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA 3: Configurações -->
+                <div id="dash-settings" class="dash-sub-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-shield-check text-emerald-500"></i> Segurança</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs text-zinc-500 uppercase font-bold mb-2">Senha de Acesso ao Painel</label>
+                                    <div class="flex gap-2">
+                                        <input id="config-new-pass" type="text" value="0001" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-zinc-100 outline-none focus:ring-1 focus:ring-emerald-500">
+                                        <button onclick="updateConfig('password')" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-xs font-bold text-zinc-300 uppercase">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-gear text-emerald-500"></i> Funcionalidades</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+                                    <div>
+                                        <p class="text-zinc-100 text-sm font-bold">Botão Emergencial</p>
+                                        <p class="text-zinc-500 text-xs">Habilitar visualização no wizard.</p>
+                                    </div>
+                                    <button id="toggle-emergency" onclick="updateConfig('emergency')" class="w-12 h-6 rounded-full bg-emerald-600 relative transition-all">
+                                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl md:col-span-2">
+                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-crane text-emerald-500"></i> Gestão de Antecedência (D+1)</h3>
+                            <div id="config-eqp-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -397,8 +477,8 @@
                             <h3 id="step-title" class="text-2xl font-bold text-zinc-100 mb-1">Qual recurso você precisa?</h3>
                             <p id="step-desc" class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
                         </div>
-                        <div class="flex flex-wrap gap-2 shrink-0 items-center">
-                            <button onclick="showEmergencyModal()" class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20">
+                        <div id="emergency-btn-container" class="flex flex-wrap gap-2 shrink-0 items-center">
+                            <button id="btn-emergency-global" onclick="showEmergencyModal()" class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20">
                                 <i class="ph-bold ph-warning-octagon text-base"></i> Emergencial
                             </button>
                             <button onclick="showGeneralAgenda()" class="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold uppercase transition-all border border-zinc-700">
@@ -801,8 +881,160 @@
             };
         })();
 
-        // Mock de Reservas Existentes (Poderia vir do LocalStorage ou Banco)
+        // ------------------
+        // Integração Turso (SQLite via HTTP API)
+        // ------------------
+        const TURSO_CONFIG = {
+            url: "libsql://agendamentorecursosespeciais-luigivaz.aws-us-east-1.turso.io", // Ex: "libsql://nome-projeto-usuario.turso.io"
+            token: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk2NTQ2NDMsImlkIjoiMDE5ZTViMTItYTgwMS03MjUwLThkNWUtMGU2Y2ExMzAwMjFhIiwicmlkIjoiNDYwNWU1OWItZTllMS00MGI5LThmNzUtN2QxOWQ1YTZiMmEzIn0.7lXMzYyGT0ZRkMqnIq6BvnWD82fDaqXXpRzIj758IGAmyRzjF_9WRUGBqPqmXzc5licPu24WxDkSr0o8cbFyAw"
+        };
+
+        // Configurações Globais (podem ser salvas no Turso depois)
+        let appConfig = {
+            password: '0001',
+            emergencyEnabled: true,
+            eqpSettings: {} // Mapeia id do equipamento -> { advance: boolean }
+        };
+
+        // Cache local de reservas
         let reservations = [];
+
+        async function queryTurso(statements) {
+            // Converte a URL libsql:// para https:// para uso via Fetch
+            const httpUrl = TURSO_CONFIG.url.replace("libsql://", "https://");
+            
+            try {
+                const response = await fetch(`${httpUrl}/v2/pipeline`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${TURSO_CONFIG.token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        requests: statements.map(s => ({ type: "execute", stmt: { sql: s } }))
+                    })
+                });
+                const data = await response.json();
+                return data.results;
+            } catch (err) {
+                console.error("Erro na conexão com Turso:", err);
+                return null;
+            }
+        }
+
+        // Inicializa a tabela se não existir
+        async function initDatabase() {
+            const sql = `
+                CREATE TABLE IF NOT EXISTS reservations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    resourceId TEXT,
+                    requester TEXT,
+                    area TEXT,
+                    description TEXT,
+                    start TEXT,
+                    end TEXT,
+                    backgroundColor TEXT
+                )
+            `;
+            await queryTurso([sql]);
+            await fetchReservations();
+        }
+
+        async function fetchReservations() {
+            const startTime = performance.now();
+            const results = await queryTurso(["SELECT * FROM reservations"]);
+            const endTime = performance.now();
+            
+            const latency = Math.round(endTime - startTime);
+            const latencyEl = document.getElementById('db-latency');
+            const pulse = document.getElementById('db-pulse');
+            const statusLabel = document.getElementById('db-status-label');
+
+            if(latencyEl) {
+                latencyEl.textContent = `Latência: ${latency}ms`;
+                // Lógica de cores baseada na performance
+                latencyEl.classList.remove('text-emerald-500', 'text-orange-500', 'text-red-500');
+                if (latency < 150) latencyEl.classList.add('text-emerald-500');
+                else if (latency < 400) latencyEl.classList.add('text-orange-500');
+                else latencyEl.classList.add('text-red-500');
+            }
+
+            if (results && results[0] && results[0].response) {
+                if(statusLabel) statusLabel.textContent = "Ativo";
+                if(pulse) {
+                    pulse.classList.remove('bg-red-500', 'bg-orange-500', 'bg-emerald-500', 'bg-zinc-500');
+                    if (latency < 150) pulse.classList.add('bg-emerald-500');
+                    else if (latency < 400) pulse.classList.add('bg-orange-500');
+                    else pulse.classList.add('bg-red-500');
+                }
+
+                // Consulta capacidade (tamanho aproximado do arquivo SQLite no Turso)
+                const meta = await queryTurso(["SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size();"]);
+                if(meta && meta[0].response) {
+                    const sizeBytes = meta[0].response.result.rows[0][0].value || 0;
+                    const sizeKb = (sizeBytes / 1024).toFixed(2);
+                    const usageText = document.getElementById('db-usage-text');
+                    if(usageText) usageText.textContent = `${sizeKb} KB`;
+                }
+
+                const rows = results[0].response.result.rows;
+                const cols = results[0].response.result.cols;
+                
+                // Mapeia os dados do SQLite para o formato do app
+                reservations = rows.map(row => {
+                    let obj = {};
+                    row.forEach((val, idx) => {
+                        // O Turso retorna valores em formatos específicos ({value: ...})
+                        obj[cols[idx].name] = val.value !== undefined ? val.value : val;
+                    });
+                    return obj;
+                });
+
+                // Atualiza as interfaces que dependem de dados
+                if (state.step === 2) renderCalendar();
+                if (state.step === 3) renderTimeCards();
+                renderGeneralAgendaCalendar();
+                // Se o dashboard estiver aberto, atualiza os gráficos com dados reais
+                if (!document.getElementById('dashboard-content').classList.contains('hidden')) initCharts();
+            } else {
+                if(statusLabel) statusLabel.textContent = "Inativo";
+                if(pulse) {
+                    pulse.classList.add('bg-red-500');
+                    pulse.classList.remove('bg-emerald-500', 'bg-orange-500', 'bg-zinc-500');
+                }
+            }
+        }
+
+        async function saveToTurso(res) {
+            const sql = `
+                INSERT INTO reservations (resourceId, requester, area, description, start, end, backgroundColor)
+                VALUES (
+                    '${res.resourceId}', 
+                    '${res.requester.replace(/'/g, "''")}', 
+                    '${res.area}', 
+                    '${res.description.replace(/'/g, "''")}', 
+                    '${res.start}', 
+                    '${res.end}', 
+                    '${res.backgroundColor}'
+                )
+            `;
+            const result = await queryTurso([sql]);
+            if (result) {
+                await fetchReservations();
+                return true;
+            }
+            return false;
+        }
+
+        // Polling para "tempo real" (atualiza a cada 10 segundos)
+        setInterval(fetchReservations, 10000);
+
+        // Chama a inicialização ao carregar a página
+        window.addEventListener('load', () => {
+            if (TURSO_CONFIG.url !== "SUA_URL_DO_TURSO_AQUI") {
+                initDatabase();
+            }
+        });
 
         let calendar;
         // Estado de controle da visualização do calendário
@@ -810,6 +1042,98 @@
             month: new Date().getMonth(),
             year: new Date().getFullYear()
         };
+
+        // ------------------
+        // Lógica de Sub-Abas do Dashboard
+        // ------------------
+        window.switchDashTab = function(tabId) {
+            document.querySelectorAll('.dash-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-zinc-800', 'text-zinc-100');
+                btn.classList.add('text-zinc-500');
+            });
+            event.currentTarget.classList.add('bg-zinc-800', 'text-zinc-100');
+            event.currentTarget.classList.remove('text-zinc-500');
+
+            document.querySelectorAll('.dash-sub-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`dash-${tabId}`).classList.remove('hidden');
+
+            if(tabId === 'overview' || tabId === 'details') initCharts();
+            if(tabId === 'settings') renderSettingsEqp();
+        };
+
+        function initSettings() {
+            // Inicializa o objeto de configurações baseado nos dados fixos se estiver vazio
+            equipments.forEach(eqp => {
+                appConfig.eqpSettings[eqp.id] = { advance: eqp.advance };
+            });
+            applyConfigUI();
+        }
+
+        function renderSettingsEqp() {
+            const container = document.getElementById('config-eqp-list');
+            container.innerHTML = equipments.map(eqp => {
+                const hasAdvance = appConfig.eqpSettings[eqp.id].advance;
+                return `
+                    <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 flex flex-col gap-3">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ${eqp.icon} text-emerald-500"></i>
+                            <span class="text-sm font-bold text-zinc-100">${eqp.name}</span>
+                        </div>
+                        <button onclick="toggleEqpAdvance('${eqp.id}')" class="w-full py-2 rounded-lg text-[10px] font-black uppercase transition-all ${hasAdvance ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-500 border border-transparent'}">
+                            ${hasAdvance ? 'Exige D+1' : 'Livre (Imediato)'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.toggleEqpAdvance = function(id) {
+            appConfig.eqpSettings[id].advance = !appConfig.eqpSettings[id].advance;
+            sfx.pop.play();
+            renderSettingsEqp();
+            renderEquipments(); // Atualiza a sessão de reserva
+        };
+
+        window.updateConfig = function(type) {
+            if(type === 'password') {
+                const newPass = document.getElementById('config-new-pass').value;
+                if(newPass.length < 1) return showToast('Erro', 'Senha não pode ser vazia');
+                appConfig.password = newPass;
+                showToast('Sucesso', 'Senha alterada com sucesso');
+            }
+            if(type === 'emergency') {
+                appConfig.emergencyEnabled = !appConfig.emergencyEnabled;
+                applyConfigUI();
+            }
+            sfx.success.play();
+        };
+
+        function applyConfigUI() {
+            // Botão Emergencial
+            const btn = document.getElementById('btn-emergency-global');
+            if(btn) {
+                if(appConfig.emergencyEnabled) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+            }
+
+            // Switch de Emergência no Settings
+            const toggle = document.getElementById('toggle-emergency');
+            if(toggle) {
+                const circle = toggle.querySelector('div');
+                if(appConfig.emergencyEnabled) {
+                toggle.classList.replace('bg-zinc-800', 'bg-emerald-600');
+                circle.classList.replace('left-1', 'right-1');
+            } else {
+                toggle.classList.replace('bg-emerald-600', 'bg-zinc-800');
+                circle.classList.replace('right-1', 'left-1');
+            }
+            }
+
+            // Atualiza os dados de 'advance' no array original para que renderEquipments use
+            equipments.forEach(eqp => {
+                eqp.advance = appConfig.eqpSettings[eqp.id].advance;
+            });
+        }
 
         // ------------------
         // Novo Formato de Seleção de Data (Calendário Estruturado)
@@ -1341,7 +1665,8 @@
             eqpGrid.innerHTML = equipments.map(eqp => {
                 const isSelected = state.eqp === eqp.id;
                 
-                // Lógica de Ocupação
+                // Lógica de Ocupação - Usar a config dinâmica
+                const hasAdvance = appConfig.eqpSettings[eqp.id].advance;
                 const isFullyOccupied = reservations.some(res => res.resourceId === eqp.id);
 
                 const vividColor = {
@@ -1375,7 +1700,7 @@
                         
                         <div class="flex-1 z-10">
                             <span class="block text-xl font-black tracking-tight ${isSelected && !isFullyOccupied ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-200'} transition-colors duration-500">${eqp.name}</span>
-                            ${eqp.advance 
+                            ${hasAdvance 
                                 ? `<div class="mt-2.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 inline-flex items-center gap-1.5">
                                      <i class="ph-fill ph-clock-counter-clockwise text-orange-500 text-[10px]"></i>
                                      <span class="text-[9px] text-orange-500 uppercase tracking-wide font-black block">Mín. 1 dia antecedência</span>
@@ -1551,7 +1876,7 @@
         }
 
         // Simulação de Submissão Backend
-        btnFinish.addEventListener('click', () => {
+        btnFinish.addEventListener('click', async () => {
             // Validação de Segurança contra conflitos de última hora
             const startDateTime = dateInput.value + 'T' + (state.timeStart || '08:00') + ':00';
             const endDateTime = dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00';
@@ -1568,18 +1893,28 @@
                 return;
             }
 
-            // Adiciona aos agendamentos reais
-            reservations.push({
-                id: Date.now(),
+            const newReservation = {
                 resourceId: state.eqp,
                 requester: empName.value,
                 area: empArea.value,
                 description: taskDesc.value,
-                title: 'Indisponível: ' + empName.value,
                 start: dateInput.value + 'T' + (state.timeStart || '08:00') + ':00',
                 end: dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00',
                 backgroundColor: '#3f3f46'
-            });
+            };
+
+            // Salva no banco de dados real
+            btnFinish.disabled = true;
+            btnFinish.textContent = "Processando...";
+            
+            const success = await saveToTurso(newReservation);
+            
+            if (!success) {
+                showToast('Erro', 'Falha ao salvar no banco de dados.');
+                btnFinish.disabled = false;
+                btnFinish.innerHTML = `Confirmar Ação <i class="ph-fill ph-check-circle text-lg"></i>`;
+                return;
+            }
 
             showToast('Solicitação Registrada!', 'O equipamento foi agendado com sucesso.');
             
@@ -1600,6 +1935,7 @@
         });
 
         // Bind Inicial
+        initSettings();
         renderEquipments();
         validateStep();
 
@@ -1668,19 +2004,73 @@
         Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
 
         function initCharts() {
+            if (reservations.length === 0) return;
+
             // Destruir instâncias existentes para evitar bugs de renderização e sobreposição
             if (window.trendChartInst) window.trendChartInst.destroy();
             if (window.rankingChartInst) window.rankingChartInst.destroy();
             if (window.pieChartInst) window.pieChartInst.destroy();
 
+            // 1. Cálculos de Métricas
+            let totalHours = 0;
+            let normalHours = 0;
+            let extraHours = 0;
+            const eqpCounts = { pta1: 0, pta2: 0, munck: 0, guindaste: 0 };
+            const requesterStats = {};
+            const dailyStats = {};
+
+            // Gerar últimos 7 dias para o gráfico de tendência
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dailyStats[d.toISOString().split('T')[0]] = 0;
+            }
+
+            reservations.forEach(res => {
+                const start = new Date(res.start);
+                const end = new Date(res.end);
+                const hours = (end - start) / (1000 * 60 * 60);
+                totalHours += hours;
+
+                // Lógica Simples: Fim de semana ou fora de 08:00-17:00 = Extra
+                const isWeekend = start.getDay() === 0 || start.getDay() === 6;
+                const isOutsideClassic = start.getHours() < 8 || end.getHours() > 17;
+                if (isWeekend || isOutsideClassic) extraHours += hours;
+                else normalHours += hours;
+
+                // Contagem por Equipamento
+                if (eqpCounts.hasOwnProperty(res.resourceId)) eqpCounts[res.resourceId]++;
+
+                // Ranking por Solicitante (por horas)
+                requesterStats[res.requester] = (requesterStats[res.requester] || 0) + hours;
+
+                // Tendência (últimos 7 dias)
+                const dayKey = res.start.split('T')[0];
+                if (dailyStats.hasOwnProperty(dayKey)) dailyStats[dayKey] += hours;
+            });
+
+            // Atualizar os Cards de Métricas no HTML
+            document.getElementById('metric-total-hours').textContent = `${totalHours.toFixed(1)}h`;
+            document.getElementById('metric-normal-hours').textContent = `${normalHours.toFixed(1)}h`;
+            document.getElementById('metric-extra-hours').textContent = `${extraHours.toFixed(1)}h`;
+            document.getElementById('metric-total-records').textContent = reservations.length;
+
+            // Atualizar porcentagens da legenda do gráfico de pizza
+            Object.keys(eqpCounts).forEach(id => {
+                const el = document.getElementById(`perc-${id}`);
+                if(el) el.textContent = reservations.length > 0 ? `${Math.round((eqpCounts[id] / reservations.length) * 100)}%` : '0%';
+            });
+
+            // 2. Gráfico de Tendência (Bar)
             const trendCtx = document.getElementById('trendChart').getContext('2d');
+            const trendLabels = Object.keys(dailyStats).map(date => date.split('-').reverse().slice(0,2).join('/'));
             window.trendChartInst = new Chart(trendCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05'],
+                    labels: trendLabels,
                     datasets: [{
                         label: 'Horas Trabalhadas',
-                        data: [12, 18, 14, 22, 16, 26, 20],
+                        data: Object.values(dailyStats),
                         backgroundColor: '#10b981',
                         borderRadius: 4
                     }]
@@ -1696,13 +2086,15 @@
                 }
             });
 
+            // 3. Ranking de Solicitantes (Horizontal Bar)
+            const sortedRequesters = Object.entries(requesterStats).sort((a,b) => b[1] - a[1]).slice(0, 5);
             const rankCtx = document.getElementById('rankingChart').getContext('2d');
             window.rankingChartInst = new Chart(rankCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['João Silva', 'Carlos Alves', 'Miguel Souza', 'Ana Costa', 'Lucas Lima'],
+                    labels: sortedRequesters.map(r => r[0]),
                     datasets: [{
-                        data: [145, 120, 98, 85, 60],
+                        data: sortedRequesters.map(r => r[1]),
                         backgroundColor: '#f59e0b',
                         borderRadius: 4,
                         indexAxis: 'y' // Torna o gráfico horizontal
@@ -1720,14 +2112,15 @@
                 }
             });
 
+            // 4. Distribuição (Doughnut)
             const pieCtx = document.getElementById('pieChart').getContext('2d');
             window.pieChartInst = new Chart(pieCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['PTA 1', 'PTA 2', 'C. Munck', 'Guindaste'],
                     datasets: [{
-                        data: [35, 25, 20, 20],
-                        backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#71717a'],
+                        data: [eqpCounts.pta1, eqpCounts.pta2, eqpCounts.munck, eqpCounts.guindaste],
+                        backgroundColor: ['#10b981', '#0ea5e9', '#f97316', '#6366f1'],
                         borderWidth: 0,
                         hoverOffset: 6
                     }]
@@ -1742,6 +2135,12 @@
         }
         
         // Lógica de desbloqueio do Dashboard e tratamento de senha
+        document.getElementById('dash-pass').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-unlock-dash').click();
+            }
+        });
+
         document.getElementById('btn-unlock-dash').addEventListener('click', () => {
             const passInput = document.getElementById('dash-pass');
             const lockScreen = document.getElementById('dashboard-lock');
@@ -1749,7 +2148,7 @@
             const errorMsg = document.getElementById('pass-error');
 
             // Senha padrão para acesso aos indicadores
-            if (passInput.value === 'admin123') {
+            if (passInput.value === appConfig.password) {
                 lockScreen.classList.add('hidden');
                 content.classList.remove('hidden');
                 initCharts(); // Inicializa gráficos apenas após o acesso
