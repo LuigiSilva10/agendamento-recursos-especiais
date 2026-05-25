@@ -296,10 +296,11 @@
     <!-- Header -->
     <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col justify-center">
                 <h1 class="text-zinc-100 font-bold tracking-wide text-2xl uppercase hidden sm:block">
                     Agendamento de Recursos Especiais - LDC
                 </h1>
+                <p class="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] leading-none mt-1">Created by Luigi Vaz</p>
             </div>
 
             <!-- Navegação de Abas -->
@@ -331,9 +332,9 @@
             <!-- Overlay de Acesso Negado "Luxo" -->
             <div id="denial-overlay" class="hidden fixed inset-0 z-[200] items-center justify-center bg-red-950/90 backdrop-blur-3xl">
                 <div class="text-center">
-                    <p class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
-                    <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
-            <p class="text-white/60 text-lg mt-4 font-medium tracking-tight">A senha informada está incorreta.</p>
+                    <p id="denial-status" class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
+                    <h2 id="denial-title" class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
+                    <p id="denial-subtitle" class="text-white/60 text-lg mt-4 font-medium tracking-tight">A senha informada está incorreta.</p>
                 </div>
             </div>
 
@@ -1552,24 +1553,23 @@
         }
 
         window.detectPeriod = function(input, targetId) {
-            let val = input.value;
+            const val = input.value;
             // Auto-colon: Adiciona ":" após os primeiros 2 dígitos
             if (val.length === 2 && !val.includes(':') && event.inputType !== 'deleteContentBackward') {
                 input.value = val + ':';
-                val = input.value;
             }
 
             const target = document.getElementById(targetId);
-            if (!val) {
+            if (!input.value) {
                 target.textContent = '--';
                 target.className = 'text-[10px] font-bold uppercase mt-2 block ml-1 text-zinc-600';
                 return; // Adicionado para evitar erro se val for vazio
             }
             
             const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-            if (!timeRegex.test(val)) return;
+            if (!timeRegex.test(input.value)) return;
 
-            const [h, m] = val.split(':');
+            const [h, m] = input.value.split(':');
             const hour = parseInt(h);
 
             let period = "";
@@ -1806,9 +1806,11 @@
                     content.classList.remove('active');
                     if (content.id === target) {
                         content.classList.add('active');
-                        // Se abrir o dashboard, garanta que os gráficos renderizem
+                        // Se abrir o dashboard e estiver desbloqueado, atualiza
                         if(target === 'tab-dashboard') {
-                            initCharts();
+                            if (!document.getElementById('dashboard-content').classList.contains('hidden')) {
+                                initCharts();
+                            }
                             // Foco automático no input de senha
                             setTimeout(() => {
                                 document.getElementById('dash-pass').focus();
@@ -2390,6 +2392,7 @@
                 setTimeout(() => {
                     lockScreen.classList.add('hidden');
                     content.classList.remove('hidden');
+                    passInput.value = ''; // Limpa campo para segurança
                     initCharts();
                 }, 300);
 
@@ -2410,9 +2413,9 @@
                     document.getElementById('btn-unlock-dash').disabled = true;
                     document.getElementById('btn-unlock-dash').classList.add('opacity-50', 'cursor-not-allowed');
 
-                    denialOverlay.querySelector('p').textContent = "Acesso Bloqueado";
-                    denialOverlay.querySelector('h2').textContent = "Procure o Luigi Vaz";
-                    denialOverlay.querySelector('p:last-child').textContent = "Setor de PCM para restaurar o acesso.";
+                    document.getElementById('denial-status').textContent = "Acesso Bloqueado";
+                    document.getElementById('denial-title').textContent = "Procure o Luigi Vaz";
+                    document.getElementById('denial-subtitle').textContent = "Setor de PCM para restaurar o acesso.";
                     
                     denialOverlay.classList.remove('hidden');
                     denialOverlay.classList.add('flex', 'animate-wind-in');
