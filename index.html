@@ -179,8 +179,8 @@
             60% { transform: translateX(-5px); }
             80% { transform: translateX(5px); }
         }
-        .animate-wind-in { animation: wind-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        .animate-wind-out { animation: wind-out 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .animate-wind-in { animation: wind-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .animate-wind-out { animation: wind-out 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         .animate-shake-error { animation: shake-error 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 
         .glass-card {
@@ -333,6 +333,7 @@
                 <div class="text-center">
                     <p class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
                     <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
+            <p class="text-white/60 text-lg mt-4 font-medium tracking-tight">A senha informada está incorreta.</p>
                 </div>
             </div>
 
@@ -344,7 +345,12 @@
                 <h3 class="text-xl font-bold text-zinc-100 mb-2">Acesso Restrito</h3>
                 <p class="text-zinc-400 text-sm mb-8 px-4">O painel de indicadores é visível apenas para usuários autorizados.</p>
                 <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs px-4">
-                    <input id="dash-pass" type="password" placeholder="Digite a senha" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                    <div class="relative flex-1">
+                        <input id="dash-pass" type="password" placeholder="Digite a senha" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 pr-12">
+                        <button type="button" id="toggle-dash-pass" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                            <i class="ph ph-eye text-xl"></i>
+                        </button>
+                    </div>
                     <button id="btn-unlock-dash" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg font-bold transition-all">Entrar</button>
                 </div>
                 <p id="pass-error" class="text-red-400 text-xs mt-6 hidden">Senha incorreta. Verifique e tente novamente.</p>
@@ -444,17 +450,21 @@
             <!-- ABA 3: Configurações -->
                 <div id="dash-settings" class="dash-sub-content hidden space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
-                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-shield-check text-emerald-500"></i> Segurança</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-xs text-zinc-500 uppercase font-bold mb-2">Senha de Acesso ao Painel</label>
-                                    <div class="flex gap-2">
-                                        <input id="config-new-pass" type="text" value="0001" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-zinc-100 outline-none focus:ring-1 focus:ring-emerald-500">
-                                        <button onclick="updateConfig('password')" class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-xs font-bold text-zinc-300 uppercase">Salvar</button>
-                                    </div>
-                                </div>
+                        <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <i class="ph ph-shield-check text-8xl text-emerald-500"></i>
                             </div>
+                            <h3 class="text-sm font-black text-zinc-100 uppercase tracking-widest mb-6 flex items-center gap-3">
+                                <i class="ph-fill ph-lock-key text-emerald-500 text-lg"></i> Segurança do Painel
+                            </h3>
+                            <div class="bg-zinc-950 border border-zinc-800 p-2 pl-6 rounded-2xl flex items-center gap-3 focus-within:ring-2 focus-within:ring-emerald-500/30 transition-all">
+                                <div class="shrink-0 text-zinc-500"><i class="ph-bold ph-key"></i></div>
+                                <input id="config-new-pass" type="text" value="0001" class="flex-1 bg-transparent border-none text-zinc-100 font-bold outline-none placeholder:text-zinc-700" placeholder="Nova senha">
+                                <button onclick="updateConfig('password')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/30 hover:scale-105 active:scale-95 shrink-0">
+                                    Salvar Senha
+                                </button>
+                            </div>
+                            <p class="text-[9px] text-zinc-500 uppercase font-bold mt-4 tracking-widest">A alteração de senha é refletida imediatamente em todos os terminais.</p>
                         </div>
                         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
                             <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-gear text-emerald-500"></i> Funções do Sistema</h3>
@@ -968,6 +978,7 @@
 
         // Cache local de reservas
         let reservations = [];
+        let dashPasswordAttempts = 0;
 
         async function queryTurso(statements) {
             // Converte a URL libsql:// para https:// para uso via Fetch
@@ -994,7 +1005,7 @@
 
         // Inicializa a tabela se não existir
         async function initDatabase() {
-            const sql = `
+            const sqlRes = `
                 CREATE TABLE IF NOT EXISTS reservations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     resourceId TEXT,
@@ -1006,13 +1017,19 @@
                     backgroundColor TEXT
                 )
             `;
-            await queryTurso([sql]);
+            const sqlSettings = `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)`;
+            const sqlSeed = `INSERT OR IGNORE INTO settings (key, value) VALUES ('password', '0001')`;
+            
+            await queryTurso([sqlRes, sqlSettings, sqlSeed]);
             await fetchReservations();
         }
 
         async function fetchReservations() {
             const startTime = performance.now();
-            const results = await queryTurso(["SELECT * FROM reservations"]);
+            const results = await queryTurso([
+                "SELECT * FROM reservations", 
+                "SELECT value FROM settings WHERE key = 'password'"
+            ]);
             const endTime = performance.now();
             
             const latency = Math.round(endTime - startTime);
@@ -1030,6 +1047,12 @@
             }
 
             if (results && results[0] && results[0].response) {
+                // Atualiza Senha Real do Banco
+                if (results[1] && results[1].response && results[1].response.result.rows.length > 0) {
+                    const passRow = results[1].response.result.rows[0][0];
+                    appConfig.password = passRow.value !== undefined ? passRow.value : passRow;
+                }
+
                 if(statusLabel) statusLabel.textContent = "Ativo";
                 if(pulse) {
                     pulse.classList.remove('bg-red-500', 'bg-orange-500', 'bg-emerald-500', 'bg-zinc-500');
@@ -1255,8 +1278,15 @@
             if(type === 'password') {
                 const newPass = document.getElementById('config-new-pass').value;
                 if(newPass.length < 1) return showToast('Erro', 'Senha não pode ser vazia');
-                appConfig.password = newPass;
-                showToast('Sucesso', 'Senha alterada com sucesso');
+                
+                // Persistência Real no Turso
+                const sql = `UPDATE settings SET value = '${newPass.replace(/'/g, "''")}' WHERE key = 'password'`;
+                queryTurso([sql]).then(res => {
+                    if(res) {
+                        appConfig.password = newPass;
+                        showToast('Sucesso', 'Senha salva permanentemente');
+                    }
+                });
             }
             if(type === 'emergency') {
                 appConfig.emergencyEnabled = !appConfig.emergencyEnabled;
@@ -2318,6 +2348,19 @@
             }
         });
 
+        // Alternar visibilidade da senha
+        document.getElementById('toggle-dash-pass').addEventListener('click', function() {
+            const passInput = document.getElementById('dash-pass');
+            const icon = this.querySelector('i');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.className = 'ph ph-eye-slash text-xl';
+            } else {
+                passInput.type = 'password';
+                icon.className = 'ph ph-eye text-xl';
+            }
+        });
+
         document.getElementById('btn-unlock-dash').addEventListener('click', () => {
             const passInput = document.getElementById('dash-pass');
             const lockScreen = document.getElementById('dashboard-lock');
@@ -2336,6 +2379,7 @@
 
             // Senha padrão para acesso aos indicadores
             if (passInput.value === appConfig.password) {
+                dashPasswordAttempts = 0;
                 // Inicia transição de luxo
                 welcomeGreeting.textContent = getGreeting();
                 welcomeOverlay.classList.remove('hidden');
@@ -2347,7 +2391,7 @@
                     lockScreen.classList.add('hidden');
                     content.classList.remove('hidden');
                     initCharts();
-                }, 500);
+                }, 300);
 
                 // Desaparece devagar
                 setTimeout(() => {
@@ -2355,26 +2399,43 @@
                     setTimeout(() => {
                         welcomeOverlay.classList.add('hidden');
                         welcomeOverlay.classList.remove('flex', 'animate-wind-out');
-                    }, 1500);
-                }, 2500);
+                    }, 800);
+                }, 1200);
 
             } else {
+                dashPasswordAttempts++;
+
+                if (dashPasswordAttempts >= 3) {
+                    passInput.disabled = true;
+                    document.getElementById('btn-unlock-dash').disabled = true;
+                    document.getElementById('btn-unlock-dash').classList.add('opacity-50', 'cursor-not-allowed');
+
+                    denialOverlay.querySelector('p').textContent = "Acesso Bloqueado";
+                    denialOverlay.querySelector('h2').textContent = "Procure o Luigi Vaz";
+                    denialOverlay.querySelector('p:last-child').textContent = "Setor de PCM para restaurar o acesso.";
+                    
+                    denialOverlay.classList.remove('hidden');
+                    denialOverlay.classList.add('flex', 'animate-wind-in');
+                    sfx.error.play();
+                    return;
+                }
+
                 // Transição de erro sofisticada (Vermelha)
                 denialOverlay.classList.remove('hidden');
-                denialOverlay.classList.add('flex', 'animate-luxury-in');
+                denialOverlay.classList.add('flex', 'animate-wind-in');
                 
                 lockScreen.classList.add('animate-shake-error');
                 sfx.error.play();
                 passInput.value = '';
 
                 setTimeout(() => {
-                    denialOverlay.classList.replace('animate-luxury-in', 'animate-luxury-out');
+                    denialOverlay.classList.replace('animate-wind-in', 'animate-wind-out');
                     setTimeout(() => {
                         denialOverlay.classList.add('hidden');
-                        denialOverlay.classList.remove('flex', 'animate-luxury-out');
+                        denialOverlay.classList.remove('flex', 'animate-wind-out');
                         lockScreen.classList.remove('animate-shake-error');
-                    }, 1500);
-                }, 1800);
+                    }, 800);
+                }, 1000);
             }
         });
 
