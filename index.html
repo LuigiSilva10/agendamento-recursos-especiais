@@ -179,7 +179,7 @@
                 height: calc(64px + env(safe-area-inset-bottom));
                 padding-bottom: env(safe-area-inset-bottom);
                 border-top: 1px solid #27272a; border-bottom: none;
-                background: rgba(24, 24, 27, 0.98); backdrop-filter: blur(20px);
+            background: #09090b; backdrop-filter: blur(20px);
             }
             header .max-w-7xl { height: 64px; padding: 0 12px; }
             header h1, header p { display: none; }
@@ -340,6 +340,7 @@
 <body class="min-h-screen flex flex-col overflow-y-auto">
     <!-- Header -->
     <header class="shrink-0 z-40 bg-zinc-900 border-b border-zinc-800 shadow-sm">
+    <header class="shrink-0 z-40 bg-zinc-950 border-b border-zinc-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex flex-col justify-center">
                 <h1 class="text-zinc-100 font-bold tracking-wide text-2xl uppercase hidden sm:block">
@@ -970,12 +971,9 @@
     <!-- Banner de Instalação Mobile (PWA Prompt) -->
     <div id="mobile-install-banner" class="hidden fixed bottom-20 left-4 right-4 z-[210] bg-emerald-600 text-white p-4 rounded-2xl shadow-2xl items-center justify-between animate-in slide-in-from-bottom-10 duration-500">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <i class="ph-fill ph-layout text-2xl"></i>
-            </div>
             <div>
                 <p class="font-bold text-sm">Instalar Aplicativo</p>
-                <p class="text-[10px] opacity-90">Desenvolvido por Luigi Vaz • Acesso rápido.</p>
+                <p class="text-[10px] opacity-90 whitespace-nowrap">Desenvolvido por Luigi Vaz</p>
             </div>
         </div>
         <div class="flex gap-2">
