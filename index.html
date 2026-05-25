@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendamento de Recursos Especiais - LDC</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#10b981">
     <!-- Favicon para evitar erro 404 no console -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>">
     <!-- Tailwind CSS (via CDN) -->
@@ -162,6 +167,33 @@
         .fc .fc-timegrid-slot { height: 2.2em !important; }
         .fc-v-event { background-color: #10b981 !important; border: none !important; border-left: 3px solid #059669 !important; }
         .fc-event-title { font-weight: 700; }
+
+        /* Mobile App HUD Adjustments */
+        @media (max-width: 640px) {
+            header {
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                width: 100%;
+                height: auto;
+                padding-bottom: env(safe-area-inset-bottom);
+                border-top: 1px solid #27272a;
+                border-bottom: none;
+            }
+            header .max-w-7xl {
+                flex-direction: column;
+                padding: 12px;
+                gap: 8px;
+            }
+            header h1, header p { display: none; }
+            header nav { width: 100%; justify-content: space-around; }
+            header nav button { flex: 1; justify-content: center; padding-top: 12px; padding-bottom: 12px; }
+            main { padding-bottom: 100px; } /* Espaço para a nav inferior */
+        }
+
+        @media (display-mode: standalone) {
+            body { user-select: none; -webkit-tap-highlight-color: transparent; }
+        }
 
         /* Glassmorphism & Neon Effects */
         @keyframes wind-in {
@@ -451,6 +483,14 @@
             <!-- ABA 3: Configurações -->
                 <div id="dash-settings" class="dash-sub-content hidden space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div id="pwa-install-card" class="hidden bg-zinc-900 border border-emerald-500/30 p-6 rounded-[2rem] shadow-xl relative overflow-hidden md:col-span-2">
+                            <h3 class="text-sm font-black text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <i class="ph-bold ph-download-simple"></i> Aplicativo Disponível
+                            </h3>
+                            <p class="text-zinc-400 text-xs mb-4">Instale o sistema na sua tela inicial para acesso rápido e visual nativo.</p>
+                            <button id="btn-pwa-install" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-black text-xs uppercase transition-all">Instalar no Celular</button>
+                        </div>
+
                         <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-10">
                                 <i class="ph ph-shield-check text-8xl text-emerald-500"></i>
@@ -460,7 +500,7 @@
                             </h3>
                             <div class="bg-zinc-950 border border-zinc-800 p-2 pl-6 rounded-2xl flex items-center gap-3 focus-within:ring-2 focus-within:ring-emerald-500/30 transition-all">
                                 <div class="shrink-0 text-zinc-500"><i class="ph-bold ph-key"></i></div>
-                                <input id="config-new-pass" type="text" value="0001" class="flex-1 bg-transparent border-none text-zinc-100 font-bold outline-none placeholder:text-zinc-700" placeholder="Nova senha">
+                                <label for="config-new-pass" class="sr-only">Nova senha</label><input id="config-new-pass" type="text" value="0001" class="flex-1 bg-transparent border-none text-zinc-100 font-bold outline-none placeholder:text-zinc-700" placeholder="Nova senha">
                                 <button onclick="updateConfig('password')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-500/30 hover:scale-105 active:scale-95 shrink-0">
                                     Salvar Senha
                                 </button>
@@ -620,11 +660,11 @@
                     <div id="step-4" class="step-content pt-4 md:pt-10">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-zinc-400">Nome Colaborador</label>
+                                <label for="employee-name" class="block text-sm font-medium text-zinc-400">Nome Colaborador</label>
                                 <input id="employee-name" type="text" placeholder="Digite o nome completo" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
                             </div>
                             <div class="space-y-2 text-left">
-                                <label class="block text-sm font-medium text-zinc-400">Área que vai trabalhar</label>
+                                <label for="employee-area" class="block text-sm font-medium text-zinc-400">Área que vai trabalhar</label>
                                 <select id="employee-area" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none">
                                     <option value="" disabled selected>Selecione a área</option>
                                     <option value="1A">Área 1A</option>
@@ -635,7 +675,7 @@
                                 </select>
                             </div>
                             <div class="space-y-2 md:col-span-2 text-left">
-                                <label class="block text-sm font-medium text-zinc-400">Breve resumo do que irá ser feito</label>
+                                <label for="task-description" class="block text-sm font-medium text-zinc-400">Breve resumo do que irá ser feito</label>
                                 <textarea id="task-description" rows="3" placeholder="Descreva brevemente a atividade que será realizada..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"></textarea>
                             </div>
                         </div>
@@ -828,13 +868,13 @@
                 
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="text-left">
-                        <label class="block text-xs uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Início (Retirada)</label>
-                        <input type="text" id="custom-start" maxlength="5" placeholder="08:00" oninput="detectPeriod(this, 'start-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
+                        <label for="custom-start" class="block text-xs uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Início (Retirada)</label>
+                        <input type="text" id="custom-start" maxlength="5" placeholder="08:00" oninput="detectPeriod(event, this, 'start-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
                         <span id="start-period" class="text-xs font-bold uppercase mt-2 block ml-1 text-zinc-600 tracking-tighter">--</span>
                     </div>
                     <div class="text-left">
-                        <label class="block text-xs uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Fim (Devolução)</label>
-                        <input type="text" id="custom-end" maxlength="5" placeholder="17:00" oninput="detectPeriod(this, 'end-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
+                        <label for="custom-end" class="block text-xs uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Fim (Devolução)</label>
+                        <input type="text" id="custom-end" maxlength="5" placeholder="17:00" oninput="detectPeriod(event, this, 'end-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
                         <span id="end-period" class="text-xs font-bold uppercase mt-2 block ml-1 text-zinc-600 tracking-tighter">--</span>
                     </div>
                 </div>
@@ -980,6 +1020,7 @@
         // Cache local de reservas
         let reservations = [];
         let dashPasswordAttempts = 0;
+        let deferredPrompt;
 
         async function queryTurso(statements) {
             // Converte a URL libsql:// para https:// para uso via Fetch
@@ -1123,6 +1164,31 @@
 
         // Polling para "tempo real" (atualiza a cada 10 segundos)
         setInterval(fetchReservations, 10000);
+
+        // ------------------
+        // Lógica de Instalação PWA
+        // ------------------
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installCard = document.getElementById('pwa-install-card');
+            if (installCard) installCard.classList.remove('hidden');
+        });
+
+        document.getElementById('btn-pwa-install')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('pwa-install-card').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
 
         // Chama a inicialização ao carregar a página
         window.addEventListener('load', () => {
@@ -1552,10 +1618,10 @@
             sfx.click.play();
         }
 
-        window.detectPeriod = function(input, targetId) {
+        window.detectPeriod = function(e, input, targetId) {
             const val = input.value;
             // Auto-colon: Adiciona ":" após os primeiros 2 dígitos
-            if (val.length === 2 && !val.includes(':') && event.inputType !== 'deleteContentBackward') {
+            if (val.length === 2 && !val.includes(':') && e.inputType !== 'deleteContentBackward') {
                 input.value = val + ':';
             }
 
