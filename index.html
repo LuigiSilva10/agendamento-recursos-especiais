@@ -197,8 +197,8 @@
             main { 
                 height: auto;
                 min-height: calc(100dvh - 64px - env(safe-area-inset-bottom));
-                overflow-y: visible; overflow-x: hidden; padding: 12px !important;
-                padding-bottom: 100px !important; /* Espaço extra para não cobrir botões com a nav */
+                overflow-y: visible; overflow-x: hidden; padding: 0 !important;
+                padding-bottom: 64px !important; /* Espaço para a nav inferior */
             }
             .tab-content { height: auto; }
             #tab-new.active { height: auto; display: block; }
@@ -337,7 +337,7 @@
 
     </style>
 </head>
-<body class="min-h-screen flex flex-col overflow-y-auto">
+<body class="min-h-screen flex flex-col overflow-y-auto bg-zinc-950">
     <!-- Header -->
     <header class="shrink-0 z-40 bg-zinc-950 border-b border-zinc-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -360,7 +360,7 @@
         </div>
     </header>
 
-    <main class="flex-1 p-4 md:p-8 relative">
+    <main class="flex-1 p-0 relative">
         
         <!-- =======================
              DASHBOARD TAB
@@ -556,7 +556,7 @@
              NOVA SOLICITAÇÃO TAB
         ======================== -->
         <div id="tab-new" class="tab-content active">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl md:rounded-[2.5rem] p-4 md:p-6 shadow-2xl w-full max-w-[1500px] h-auto min-h-full sm:h-[85vh] max-h-[850px] flex flex-col sm:overflow-hidden">
+            <div class="bg-zinc-900 w-full min-h-full flex flex-col p-4 md:p-10">
                 <!-- Cabeçalho (Passos e Barras de Progresso) -->
                 <div class="mb-3 md:mb-6 flex flex-col gap-2 md:gap-6 shrink-0">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
@@ -598,8 +598,8 @@
                     <!-- Passo 2: Seleção de Data (Novo Formato de Cards) -->
                     <div id="step-2" class="step-content">
                         <!-- Cabeçalho Fixo (Título, Navegação e Dias da Semana) -->
-                        <div class="sticky top-0 bg-zinc-900 z-40 pt-1 md:pt-6 pb-2 shadow-md">
-                            <div class="w-full px-4 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4 md:mb-6">
+                        <div class="sticky top-0 bg-zinc-900 z-40 pt-1 md:pt-2 pb-2 shadow-md">
+                            <div class="w-full px-4 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2 md:mb-4">
                                 <div class="hidden md:block"></div> <!-- Espaçador para manter layout -->
                                 <div class="flex items-center gap-4 self-center md:self-auto">
                                     <!-- Botão Hoje fora com animação de raio -->
@@ -628,7 +628,7 @@
                             </div>
                         </div>
 
-                        <div class="max-w-5xl mx-auto w-full px-4">
+                        <div class="max-w-6xl mx-auto w-full px-4">
                             <!-- Grid do Calendário -->
                             <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3 pb-20 mt-2">
                                 <!-- Dias gerados via JS -->
@@ -721,7 +721,7 @@
                     </div>
                 </div>
 
-                <div id="wizard-footer" class="mt-8 md:mt-auto pt-4 md:pt-6 border-t border-zinc-800 flex items-center justify-between gap-2 md:gap-4 shrink-0 px-1 pb-32 sm:pb-4">
+                <div id="wizard-footer" class="mt-4 md:mt-auto pt-4 md:pt-6 border-t border-zinc-800 flex items-center justify-between gap-2 md:gap-4 shrink-0 px-1 pb-20 sm:pb-4">
                     <button id="btn-prev" class="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs uppercase text-zinc-400 hover:bg-zinc-800 transition-all invisible">
                         <i class="ph ph-arrow-left"></i> Voltar
                     </button>
@@ -1042,7 +1042,7 @@
                     const target = document.getElementById('wizard-footer');
                     
                     if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 150);
             }
@@ -1494,7 +1494,7 @@
             let html = '';
             // Preenchimento de dias vazios no início do mês
             for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="aspect-[1/1.3] sm:aspect-square bg-zinc-950/20 border border-zinc-800/30 rounded-lg"></div>`;
+                html += `<div class="aspect-[1/1.3] sm:aspect-[1.6/1] bg-zinc-950/20 border border-zinc-800/30 rounded-lg"></div>`;
             }
 
             const today = new Date();
@@ -1548,7 +1548,7 @@
                 html += `
                     <button onclick="${!isDisabled ? `selectDate('${dateStr}')` : ''}"
                          ${isDisabled ? 'disabled' : ''}
-                         class="group relative aspect-[1/1.3] sm:aspect-square rounded-lg border-2 transition-all flex flex-col items-center justify-center overflow-hidden
+                         class="group relative aspect-[1/1.3] sm:aspect-[1.6/1] rounded-lg border-2 transition-all flex flex-col items-center justify-center overflow-hidden
                          ${isDisabled ? 'opacity-20 cursor-not-allowed border-transparent bg-zinc-900/50' : 
                             isSelected 
                             ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10 day-selected-anim' 
@@ -1567,7 +1567,7 @@
             const totalSlotsUsed = firstDayOfMonth + daysInMonth;
             const remainingSlots = 42 - totalSlotsUsed;
             for (let i = 0; i < remainingSlots; i++) {
-                html += `<div class="aspect-[1/1.3] sm:aspect-square bg-zinc-950/20 border border-zinc-800/30 rounded-lg"></div>`;
+                html += `<div class="aspect-[1/1.3] md:aspect-[1.6/1] bg-zinc-950/20 border border-zinc-800/30 rounded-2xl"></div>`;
             }
 
             grid.innerHTML = html;
@@ -1824,7 +1824,7 @@
 
             let html = '';
             for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="aspect-[1/1.3] md:h-20 bg-zinc-950/20 border border-zinc-800/30 rounded-2xl"></div>`;
+                html += `<div class="aspect-[1/1.3] md:aspect-[1.6/1] bg-zinc-950/20 border border-zinc-800/30 rounded-2xl"></div>`;
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
@@ -1851,7 +1851,7 @@
                 }
 
                 html += `
-                    <div class="relative aspect-[1/1.3] md:h-20 rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center transition-all hover:border-zinc-600">
+                    <div class="relative aspect-[1/1.3] md:aspect-[1.6/1] rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center transition-all hover:border-zinc-600">
                         ${pinsHtml}
                         <span class="text-xl font-black text-zinc-500">${day}</span>
                     </div>
