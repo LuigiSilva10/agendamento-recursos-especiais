@@ -536,8 +536,8 @@
                             </div>
                         </div>
                         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl md:col-span-2">
-                            <h3 class="text-lg font-medium text-zinc-100 mb-4 flex items-center gap-2"><i class="ph ph-crane text-emerald-500"></i> Gestão de Antecedência (D+1)</h3>
-                            <div id="config-eqp-list" class="grid grid-cols-4 gap-4"></div>
+                            <h3 class="text-sm font-black text-zinc-100 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-crane text-emerald-500 text-lg"></i> Gestão de Antecedência (D+1)</h3>
+                            <div id="config-eqp-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4"></div>
                         </div>
                         <!-- Gestão de Reservas Ativas -->
                         <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl md:col-span-2">
@@ -1312,12 +1312,14 @@
             container.innerHTML = equipments.map(eqp => {
                 const hasAdvance = appConfig.eqpSettings[eqp.id].advance;
                 return `
-                    <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex flex-col gap-3">
-                        <div class="flex items-center gap-2">
-                            <i class="ph ${eqp.icon} text-emerald-500"></i>
-                            <span class="text-sm font-bold text-zinc-100">${eqp.name}</span>
+                    <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex flex-col justify-between gap-4 transition-all hover:border-zinc-700">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                <i class="ph-bold ${eqp.icon} text-lg"></i>
+                            </div>
+                            <span class="text-xs font-black uppercase tracking-tight text-zinc-100">${eqp.name}</span>
                         </div>
-                        <button onclick="toggleEqpAdvance('${eqp.id}')" class="w-full py-2 rounded-lg text-[10px] font-black uppercase transition-all ${hasAdvance ? 'bg-orange-500/20 text-orange-500 border border-orange-500/30' : 'bg-zinc-800 text-zinc-500 border border-transparent'}">
+                        <button onclick="toggleEqpAdvance('${eqp.id}')" class="w-full py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${hasAdvance ? 'bg-orange-500/10 text-orange-500 border border-orange-500/30 shadow-lg shadow-orange-500/5' : 'bg-zinc-800 text-zinc-500 border border-transparent'}">
                             ${hasAdvance ? 'Exige D+1' : 'Livre (Imediato)'}
                         </button>
                     </div>
