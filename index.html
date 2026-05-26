@@ -311,20 +311,21 @@
         /* Faixa de Reservado 45 graus */
         .reserved-ribbon {
             position: absolute;
-            top: 20px;
-            left: -35px;
-            width: 150px;
-            background: #ef4444;
+            top: 24px;
+            left: -42px;
+            width: 170px;
+            background: #dc2626;
             color: white;
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 900;
             transform: rotate(-45deg);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             z-index: 40;
             pointer-events: none;
             text-transform: uppercase;
-            padding: 2px 0;
+            padding: 5px 0;
+            letter-spacing: 0.05em;
         }
 
         /* Ajustes para a Agenda Mensal */
@@ -1656,13 +1657,13 @@
                     <button type="button" 
                         ${finalDisabled ? 'disabled' : `onclick="selectPeriod('${p.start || ''}', '${p.end || ''}', ${isCustom})"`}
                         class="flex flex-col aspect-[1.4/1] sm:aspect-square items-center justify-center p-2 sm:p-6 lg:p-8 rounded-[1.5rem] sm:rounded-[2rem] border-2 transition-all duration-200
-                        ${cardClasses} ${finalDisabled ? 'opacity-40 grayscale cursor-not-allowed' : ''}">
-                        ${isOccupied ? '<div class="absolute inset-0 bg-red-500/5 flex items-center justify-center"><span class="text-[8px] font-black text-red-500 rotate-45 border border-red-500/20 px-1">OCUPADO</span></div>' : ''}
+                        ${cardClasses} ${finalDisabled ? 'opacity-40 grayscale cursor-not-allowed' : ''} relative overflow-hidden">
+                        ${isOccupied ? '<div class="reserved-ribbon">Já reservado</div>' : ''}
                         <div class="w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl mb-0.5 sm:mb-4 flex items-center justify-center ${finalDisabled ? 'bg-zinc-700 text-zinc-500' : iconClasses} transition-all duration-500">
                             <i class="ph-bold ${p.icon} text-xl sm:text-2xl lg:text-3xl"></i>
                         </div>
                         <span class="block text-[10px] sm:text-base lg:text-lg font-black text-zinc-100 uppercase tracking-tighter">${p.label}</span>
-                        <span class="text-zinc-500 text-[8px] sm:text-[10px] font-bold mt-0 sm:mt-2 uppercase tracking-widest text-center">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO' : (isCustom && !state.isCustomTime ? 'Definir' : `${formatTo12h(pStart)} - ${formatTo12h(pEnd)}`))}</span>
+                        <span class="text-zinc-500 text-[8px] sm:text-[10px] font-bold mt-0 sm:mt-2 uppercase tracking-widest text-center">${isOccupied ? 'JÁ RESERVADO' : (isLeadTimeLocked ? 'BLOQUEADO' : (isCustom && !state.isCustomTime ? 'Definir' : `${formatTo12h(pStart)} - ${formatTo12h(pEnd)}`))}</span>
                     </button>
                 `;
             }).join('') + `</div>`;
@@ -1977,7 +1978,7 @@
         // -----------------------
         const equipments = [
             { id: 'pta1', name: 'PTA 1', icon: 'ph-elevator', advance: false, color: 'emerald' },
-            { id: 'pta2', name: 'PTA 2', icon: 'ph-elevator', advance: false, color: 'sky' },
+            { id: 'pta2', name: 'PTA 2', icon: 'ph-elevator', advance: false, color: 'sky', unavailable: true },
             { id: 'munck', name: 'Munck', icon: 'ph-truck', advance: false, color: 'orange' },
             { id: 'guindaste', name: 'Guindaste', icon: 'ph-crane', advance: true, color: 'indigo' },
         ];
@@ -2025,10 +2026,10 @@
         function renderEquipments() {
             eqpGrid.innerHTML = equipments.map(eqp => {
                 const isSelected = state.eqp === eqp.id;
-                
-                // Lógica de Ocupação - Usar a config dinâmica
-                const hasAdvance = appConfig.eqpSettings[eqp.id].advance;
-                const isFullyOccupied = reservations.some(res => res.resourceId === eqp.id);
+                const isUnavailable = eqp.unavailable === true;
+
+                // Lógica de Configuração Dinâmica
+                const hasAdvance = appConfig.eqpSettings[eqp.id] ? appConfig.eqpSettings[eqp.id].advance : eqp.advance;
 
                 const vividColor = {
                     emerald: 'bg-emerald-500',
@@ -2045,23 +2046,22 @@
                 }[eqp.color] : '';
 
                 return `
-                    <button type="button" 
-                        ${isFullyOccupied ? '' : `onclick="selectEqp('${eqp.id}')"`}
+                    <button type="button"
+                        ${isUnavailable ? '' : `onclick="selectEqp('${eqp.id}')"`}
                         class="group relative aspect-[1.4/1] sm:aspect-square flex flex-col items-center justify-center p-2 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border-2 text-center transition-all duration-200 overflow-hidden
-                        ${isFullyOccupied ? 'bg-zinc-800 border-zinc-700 grayscale opacity-60 cursor-not-allowed' : 
+                        ${isUnavailable ? 'bg-zinc-800 border-zinc-700 grayscale opacity-60 cursor-not-allowed' : 
                           (isSelected ? `bg-zinc-900 ${borderGlow} scale-[1.02] shadow-2xl ring-4` : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600 hover:bg-zinc-900/80 hover:scale-[1.02] hover:shadow-[inset_0_4px_20px_rgba(0,0,0,0.6)] active:scale-95')}">
                         
-                        ${isSelected && !isFullyOccupied ? '<div class="shine-element"></div>' : ''}
+                        ${isUnavailable ? '<div class="reserved-ribbon">Indisponivel</div>' : ''}
+                        ${isSelected && !isUnavailable ? '<div class="shine-element"></div>' : ''}
 
-                        ${isFullyOccupied ? '<div class="reserved-ribbon">Indisponivel</div>' : ''}
-
-                        <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-0.5 sm:mb-4 flex items-center justify-center ${isSelected && !isFullyOccupied ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300'} transition-all duration-500 ease-out">
+                        <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-0.5 sm:mb-4 flex items-center justify-center ${isSelected && !isUnavailable ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300'} transition-all duration-500 ease-out">
                             <i class="ph ${eqp.icon} text-3xl"></i>
                         </div>
                         
                         <div class="z-10 w-full">
-                            <span class="block text-[10px] sm:text-xl font-black tracking-tight ${isSelected && !isFullyOccupied ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-200'} transition-colors duration-500">${eqp.name}</span>
-                            ${hasAdvance
+                            <span class="block text-[10px] sm:text-xl font-black tracking-tight ${isSelected && !isUnavailable ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-200'} transition-colors duration-500">${eqp.name}</span>
+                            ${isUnavailable ? '' : (hasAdvance
                                 ? `<div class="mt-0.5 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/30 inline-flex items-center gap-1">
                                      <i class="ph-fill ph-clock-counter-clockwise text-orange-500 text-[10px]"></i>
                                      <span class="text-[9px] text-orange-500 uppercase tracking-wide font-black block">Mín. 1 dia antecedência</span>
@@ -2069,11 +2069,11 @@
                                 : `<div class="mt-0.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1">
                                      <i class="ph-fill ph-bolt text-emerald-500 text-[10px]"></i>
                                      <span class="text-[9px] text-emerald-500 uppercase tracking-wide font-black block">Reserva Imediata</span>
-                                   </div>`
+                                   </div>`)
                             }
                         </div>
                         
-                        ${isSelected && !isFullyOccupied ? `
+                        ${isSelected && !isUnavailable ? `
                             <div class="absolute -top-2 -right-2 w-12 h-12 bg-emerald-500 rounded-bl-[2rem] flex items-center justify-center border-t-2 border-r-2 border-white/20">
                                 <i class="ph-bold ph-check text-white text-sm"></i>
                             </div>
@@ -2117,6 +2117,7 @@
                 isValid = true;
             }
             btnNext.disabled = !isValid;
+            btnFinish.disabled = !isValid;
         }
 
         [dateInput, empName, empArea, taskDesc].forEach(input => {
@@ -2286,6 +2287,10 @@
             }
 
             showToast('Solicitação Registrada!', 'O equipamento foi agendado com sucesso.');
+            
+            // Reseta o estado do botão para o próximo uso (evita o "Processando" infinito)
+            btnFinish.disabled = false;
+            btnFinish.innerHTML = `Confirmar Ação <i class="ph-fill ph-check-circle text-lg"></i>`;
             
             // Limpa Formulário
             state.step = 1;
