@@ -366,38 +366,6 @@
              DASHBOARD TAB
         ======================== -->
         <div id="tab-dashboard" class="tab-content">
-            <!-- Overlay de Boas-Vindas "Luxo" -->
-            <div id="welcome-overlay" class="hidden fixed inset-0 z-[200] items-center justify-center bg-emerald-950/95 backdrop-blur-3xl">
-                <div class="text-center">
-                    <p id="welcome-greeting" class="text-emerald-400 font-bold text-sm uppercase tracking-[0.5em] mb-4"></p>
-                    <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Seja bem vindo.</h2>
-                </div>
-            </div>
-
-            <!-- Overlay de Acesso Negado "Luxo" -->
-            <div id="denial-overlay" class="hidden fixed inset-0 z-[200] items-center justify-center bg-red-950/90 backdrop-blur-3xl">
-                <div class="text-center">
-                    <p id="denial-status" class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
-                    <h2 id="denial-title" class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
-                    <p id="denial-subtitle" class="text-white/60 text-lg mt-4 font-medium tracking-tight">A senha informada está incorreta.</p>
-                </div>
-            </div>
-
-        <!-- Overlay de Observação de Antecedência (Laranja) -->
-        <div id="observation-modal" class="hidden fixed inset-0 z-[250] items-center justify-center bg-orange-950/95 backdrop-blur-3xl">
-            <div class="text-center p-6">
-                <div class="w-24 h-24 bg-orange-500/20 text-orange-500 rounded-full mx-auto flex items-center justify-center mb-8 animate-pulse shadow-[0_0_50px_rgba(249,115,22,0.2)]">
-                    <i class="ph-fill ph-clock-counter-clockwise text-5xl"></i>
-                </div>
-                <p class="text-orange-500 font-bold text-sm uppercase tracking-[0.5em] mb-4">Atenção ao Prazo</p>
-                <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-tight mb-6">Antecedência Exigida.</h2>
-                <p class="text-white/70 text-lg md:text-xl max-w-xl mx-auto mb-10 font-medium leading-relaxed">Este recurso selecionado exige que o agendamento seja realizado com no mínimo <span class="text-orange-400 font-black">24 horas de antecedência</span>.</p>
-                <button onclick="closeObservationModal()" class="px-10 py-5 bg-orange-600 hover:bg-orange-500 text-white rounded-3xl font-black text-sm uppercase transition-all shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95">
-                    Entendido
-                </button>
-            </div>
-        </div>
-
             <!-- Tela de Bloqueio por Senha -->
             <div id="dashboard-lock" class="flex flex-col items-center justify-center h-full text-center py-20">
                 <div class="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mb-6 text-zinc-500">
@@ -662,7 +630,7 @@
 
                         <div class="max-w-5xl mx-auto w-full px-4">
                             <!-- Grid do Calendário -->
-                            <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3 pb-10 mt-2">
+                            <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 md:gap-3 pb-20 mt-2">
                                 <!-- Dias gerados via JS -->
                             </div>
                         </div>
@@ -740,19 +708,20 @@
                                 <p class="text-zinc-500 text-xs uppercase tracking-wider mb-1 group-hover:text-emerald-500 flex items-center gap-2 transition-colors"><i class="ph ph-pencil-simple text-base md:opacity-0 group-hover:opacity-100"></i> Resumo da Atividade</p>
                                 <p id="res-desc" class="text-zinc-100 font-medium leading-relaxed italic">--</p>
                             </div>
-                        </div>
-                        
-                        <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3 max-w-4xl mx-auto mt-6">
-                            <i class="ph-fill ph-warning text-xl shrink-0"></i>
-                            <div class="text-sm text-left">
-                                <p class="font-semibold mb-1">Aviso</p>
-                                <p>Ao confirmar, o recurso ficará bloqueado para outros usuários no período selecionado.</p>
+
+                            <!-- Aviso movido para dentro do container de revisão -->
+                            <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500/90 p-4 rounded-lg flex items-start gap-3">
+                                <i class="ph-fill ph-warning text-xl shrink-0"></i>
+                                <div class="text-sm text-left">
+                                    <p class="font-semibold mb-1">Aviso</p>
+                                    <p>Ao confirmar, o recurso ficará bloqueado para outros usuários no período selecionado.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8 md:mt-auto pt-4 md:pt-6 border-t border-zinc-800 flex items-center justify-between gap-2 md:gap-4 shrink-0 px-1 pb-12 sm:pb-4">
+                <div id="wizard-footer" class="mt-8 md:mt-auto pt-4 md:pt-6 border-t border-zinc-800 flex items-center justify-between gap-2 md:gap-4 shrink-0 px-1 pb-32 sm:pb-4">
                     <button id="btn-prev" class="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs uppercase text-zinc-400 hover:bg-zinc-800 transition-all invisible">
                         <i class="ph ph-arrow-left"></i> Voltar
                     </button>
@@ -891,7 +860,7 @@
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="text-left">
                         <label for="custom-start" class="block text-xs uppercase font-bold text-zinc-500 tracking-widest mb-2 ml-1">Início (Retirada)</label>
-                        <input type="text" id="custom-start" maxlength="5" placeholder="08:00" oninput="detectPeriod(event, this, 'start-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
+                        <input type="text" id="custom-start" maxlength="5" placeholder="07:30" oninput="detectPeriod(event, this, 'start-period')" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-4 text-zinc-100 font-bold focus:ring-2 focus:ring-emerald-500/50 outline-none">
                         <span id="start-period" class="text-xs font-bold uppercase mt-2 block ml-1 text-zinc-600 tracking-tighter">--</span>
                     </div>
                     <div class="text-left">
@@ -936,7 +905,7 @@
                 </div>
             </div>
             <div class="p-8 overflow-y-auto no-scrollbar flex-1">
-                <div id="gen-calendar-grid" class="grid grid-cols-7 gap-2 pb-10">
+                <div id="gen-calendar-grid" class="grid grid-cols-7 gap-2 pb-20">
                     <!-- Dias gerados via JS -->
                 </div>
             </div>
@@ -978,6 +947,36 @@
         <div class="flex gap-2">
             <button onclick="hideInstallBanner()" class="px-3 py-2 text-xs font-bold uppercase opacity-70">Agora não</button>
             <button onclick="triggerPwaInstall()" class="px-4 py-2 bg-white text-emerald-600 rounded-lg text-xs font-black uppercase shadow-lg">Instalar</button>
+        </div>
+    </div>
+
+    <!-- Overlays Globais (Boas-Vindas, Erro e Antecedência) -->
+    <div id="welcome-overlay" class="hidden fixed inset-0 z-[300] items-center justify-center bg-emerald-950/95 backdrop-blur-3xl">
+        <div class="text-center">
+            <p id="welcome-greeting" class="text-emerald-400 font-bold text-sm uppercase tracking-[0.5em] mb-4"></p>
+            <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Seja bem vindo.</h2>
+        </div>
+    </div>
+
+    <div id="denial-overlay" class="hidden fixed inset-0 z-[300] items-center justify-center bg-red-950/90 backdrop-blur-3xl">
+        <div class="text-center">
+            <p id="denial-status" class="text-red-500 font-bold text-sm uppercase tracking-[0.4em] mb-4">Tentativa Inválida</p>
+            <h2 id="denial-title" class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none">Acesso Negado.</h2>
+            <p id="denial-subtitle" class="text-white/60 text-lg mt-4 font-medium tracking-tight">A senha informada está incorreta.</p>
+        </div>
+    </div>
+
+    <div id="observation-modal" class="hidden fixed inset-0 z-[310] items-center justify-center bg-orange-950/95 backdrop-blur-3xl">
+        <div class="text-center p-6">
+            <p class="text-orange-500 font-bold text-sm uppercase tracking-[0.5em] mb-4">Atenção ao Prazo</p>
+            <h2 class="text-white text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">Antecedência Exigida.</h2>
+            <p class="text-white/70 text-lg md:text-xl max-w-xl mx-auto mb-10 font-medium leading-relaxed tracking-tight">
+                Este recurso exige <span class="text-orange-400 font-black">1 dia de antecedência</span> para realizar o agendamento.
+                <br>Em caso de emergência, <button onclick="handleEmergencyLink()" class="text-orange-400 underline font-black hover:text-orange-300 transition-colors">clique aqui</button>.
+            </p>
+            <button onclick="closeObservationModal()" class="px-10 py-5 bg-orange-600 hover:bg-orange-500 text-white rounded-3xl font-black text-sm uppercase transition-all shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95">
+                Entendido
+            </button>
         </div>
     </div>
 
@@ -1040,12 +1039,10 @@
         function autoScrollToActions() {
             if (window.innerWidth <= 768) {
                 setTimeout(() => {
-                    const btnNext = document.getElementById('btn-next');
-                    const btnFinish = document.getElementById('btn-finish');
-                    const target = (btnFinish && !btnFinish.classList.contains('hidden')) ? btnFinish : btnNext;
+                    const target = document.getElementById('wizard-footer');
                     
                     if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        target.scrollIntoView({ behavior: 'smooth', block: 'end' });
                     }
                 }, 150);
             }
@@ -1362,9 +1359,9 @@
                             <i class="ph-bold ${eqp ? eqp.icon : 'ph-question'} text-3xl"></i>
                         </div>
                         
-                        <div class="text-center z-10 w-full mb-2 sm:mb-6">
+                        <div class="text-center z-10 w-full sm:mb-6">
                             <span class="block text-[10px] sm:text-xl font-black tracking-tight text-white mb-0 sm:mb-1 line-clamp-1">${res.requester}</span>
-                            <span class="block text-[8px] sm:text-[10px] text-zinc-500 font-black uppercase tracking-widest sm:tracking-[0.2em] mb-1 sm:mb-4 truncate">${eqp ? eqp.name : 'Recurso'} • ÁREA ${res.area}</span>
+                            <span class="block text-[8px] sm:text-[10px] text-zinc-500 font-black uppercase tracking-widest sm:tracking-[0.2em] sm:mb-4 truncate">${eqp ? eqp.name : 'Recurso'} • ÁREA ${res.area}</span>
 
                             <div class="flex flex-col gap-0.5 items-center bg-zinc-900/50 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-800">
                                 <span class="text-zinc-100 text-[10px] font-bold">${dateStr}</span>
@@ -1497,7 +1494,7 @@
             let html = '';
             // Preenchimento de dias vazios no início do mês
             for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="h-10 md:h-14"></div>`;
+                html += `<div class="aspect-[1/1.3] sm:aspect-square bg-zinc-950/20 border border-zinc-800/30 rounded-lg"></div>`;
             }
 
             const today = new Date();
@@ -1525,7 +1522,7 @@
                 
                 let pinsHtml = '';
                 if (reservedEqpIds.length > 0) {
-                    pinsHtml = `<div class="absolute top-1 right-1 flex flex-wrap justify-end gap-1 max-w-[70%] p-0.5 z-30">`;
+                    pinsHtml = `<div class="absolute top-0.5 right-0.5 flex flex-wrap justify-end gap-0.5 max-w-[90%] z-30">`;
                     reservedEqpIds.forEach(id => {
                         const eqp = equipments.find(e => e.id === id);
                         if (eqp) {
@@ -1539,9 +1536,9 @@
 
                             pinsHtml += `
                                 <div onclick="event.stopPropagation(); showResDetail('${resJson}')"
-                                     class="res-pin w-6 h-6 md:w-7 md:h-7 rounded-full ${circleClass} ${iconClass} flex items-center justify-center shadow-md">
+                                     class="res-pin w-5 h-5 md:w-7 md:h-7 rounded-full ${circleClass} ${iconClass} flex items-center justify-center shadow-md">
                                     <i class="ph-fill ${eqp.icon} text-[10px] md:text-[14px]"></i>
-                                    <div class="info-badge w-3 h-3 md:w-3.5 md:h-3.5 bg-zinc-900 text-white rounded-full flex items-center justify-center text-[8px] md:text-[8px] font-bold">?</div>
+                                    <div class="info-badge w-2.5 h-2.5 md:w-3.5 md:h-3.5 bg-zinc-900 text-white rounded-full flex items-center justify-center text-[6px] md:text-[8px] font-bold">?</div>
                                 </div>`;
                         }
                     });
@@ -1551,7 +1548,7 @@
                 html += `
                     <button onclick="${!isDisabled ? `selectDate('${dateStr}')` : ''}"
                          ${isDisabled ? 'disabled' : ''}
-                         class="group relative aspect-square rounded-lg border-2 transition-all flex flex-col items-center justify-center overflow-hidden
+                         class="group relative aspect-[1/1.3] sm:aspect-square rounded-lg border-2 transition-all flex flex-col items-center justify-center overflow-hidden
                          ${isDisabled ? 'opacity-20 cursor-not-allowed border-transparent bg-zinc-900/50' : 
                             isSelected 
                             ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10 day-selected-anim' 
@@ -1565,6 +1562,14 @@
                     </button>
                 `;
             }
+
+            // Preenchimento de dias vazios no FINAL do mês para completar 6 semanas (42 slots)
+            const totalSlotsUsed = firstDayOfMonth + daysInMonth;
+            const remainingSlots = 42 - totalSlotsUsed;
+            for (let i = 0; i < remainingSlots; i++) {
+                html += `<div class="aspect-[1/1.3] sm:aspect-square bg-zinc-950/20 border border-zinc-800/30 rounded-lg"></div>`;
+            }
+
             grid.innerHTML = html;
         }
 
@@ -1586,9 +1591,9 @@
 
         function renderTimeCards() {
             const periods = [
-                { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '08:00', end: '12:00', color: 'blue' },
+                { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '07:30', end: '11:30', color: 'blue' },
                 { id: 'tarde', label: 'Tarde', icon: 'ph-sun', start: '13:00', end: '17:00', color: 'orange' },
-                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '08:00', end: '17:00', color: 'emerald' },
+                { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '07:30', end: '17:00', color: 'emerald' },
                 { id: 'custom', label: 'Personalizado', icon: 'ph-clock-countdown', color: 'emerald' }
             ];
 
@@ -1655,7 +1660,7 @@
                             <i class="ph-bold ${p.icon} text-xl sm:text-2xl lg:text-3xl"></i>
                         </div>
                         <span class="block text-[10px] sm:text-base lg:text-lg font-black text-zinc-100 uppercase tracking-tighter">${p.label}</span>
-                        <span class="text-zinc-500 text-[8px] sm:text-[10px] font-bold mt-0 sm:mt-2 uppercase tracking-widest text-center">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO' : (isCustom && !state.isCustomTime ? 'Config' : formatTo12h(pStart)))}</span>
+                        <span class="text-zinc-500 text-[8px] sm:text-[10px] font-bold mt-0 sm:mt-2 uppercase tracking-widest text-center">${isOccupied ? 'OCUPADO' : (isLeadTimeLocked ? 'BLOQUEADO' : (isCustom && !state.isCustomTime ? 'Definir' : `${formatTo12h(pStart)} - ${formatTo12h(pEnd)}`))}</span>
                     </button>
                 `;
             }).join('') + `</div>`;
@@ -1819,7 +1824,7 @@
 
             let html = '';
             for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="h-16 md:h-20"></div>`;
+                html += `<div class="aspect-[1/1.3] md:h-20 bg-zinc-950/20 border border-zinc-800/30 rounded-2xl"></div>`;
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
@@ -1829,7 +1834,7 @@
                 
                 let pinsHtml = '';
                 if (reservedEqpIds.length > 0) {
-                    pinsHtml = `<div class="absolute top-1 right-1 flex flex-wrap justify-end gap-1 max-w-[80%] z-30">`;
+                    pinsHtml = `<div class="absolute top-0.5 right-0.5 flex flex-wrap justify-end gap-0.5 max-w-[95%] z-30">`;
                     reservedEqpIds.forEach(id => {
                         const eqp = equipments.find(e => e.id === id);
                         if (eqp) {
@@ -1837,8 +1842,8 @@
                             const resJson = encodeURIComponent(JSON.stringify({ ...resData, eqpName: eqp.name, eqpColor: eqp.color }));
                             pinsHtml += `
                                 <div onclick="event.stopPropagation(); showResDetail('${resJson}')" 
-                                     class="res-pin w-6 h-6 rounded-full bg-${eqp.color}-500 text-white flex items-center justify-center shadow-lg border border-zinc-900/50">
-                                    <i class="ph-fill ${eqp.icon} text-[12px]"></i>
+                                     class="res-pin w-5 h-5 md:w-6 md:h-6 rounded-full bg-${eqp.color}-500 text-white flex items-center justify-center shadow-lg border border-zinc-900/50">
+                                    <i class="ph-fill ${eqp.icon} text-[10px] md:text-[12px]"></i>
                                 </div>`;
                         }
                     });
@@ -1846,7 +1851,7 @@
                 }
 
                 html += `
-                    <div class="relative h-16 md:h-20 rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center transition-all hover:border-zinc-600">
+                    <div class="relative aspect-[1/1.3] md:h-20 rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center transition-all hover:border-zinc-600">
                         ${pinsHtml}
                         <span class="text-xl font-black text-zinc-500">${day}</span>
                     </div>
@@ -2080,16 +2085,6 @@
             if (state.eqp === id) return;
             state.eqp = id;
             sfx.click.play();
-            
-            // Dispara o Modal Laranja se o equipamento exigir antecedência (ex: Guindaste)
-            const eqpInfo = equipments.find(e => e.id === id);
-            if (eqpInfo && eqpInfo.advance) {
-                const obsModal = document.getElementById('observation-modal');
-                obsModal.classList.remove('hidden');
-                obsModal.classList.add('flex', 'animate-wind-in');
-                sfx.pop.play();
-            }
-
             state.date = ''; dateInput.value = '';
             // Reseta para o mês atual ao mudar de equipamento
             calendarView.month = new Date().getMonth();
@@ -2186,7 +2181,7 @@
                 document.getElementById('res-date').textContent = `${d}/${m}/${y}`;
             }
 
-            // Helper para o sumário final usar o novo formato 12h
+            // Helper para o sumário final usar o formato 24h
             const formatSummaryTime = (t) => {
                 if (!t || t === '-') return '-';
                 const [h, m] = t.split(':');
@@ -2199,6 +2194,25 @@
         }
 
         btnNext.addEventListener('click', () => {
+            // Se estiver saindo do passo 1 e o recurso exigir antecedência (ex: Guindaste)
+            if (state.step === 1) {
+                const eqpInfo = equipments.find(e => e.id === state.eqp);
+                if (eqpInfo && eqpInfo.advance) {
+                    const obsModal = document.getElementById('observation-modal');
+                    obsModal.classList.remove('hidden');
+                    obsModal.classList.add('flex', 'animate-wind-in');
+                    sfx.pop.play();
+
+                    // Prepara o calendário por trás (lógica idêntica ao boas-vindas)
+                    setTimeout(() => {
+                        state.step = 2;
+                        updateStepUI();
+                    }, 400);
+
+                    return; // Interrompe o fluxo padrão para o usuário ler o aviso
+                }
+            }
+
             if (state.step < 5) { 
                 state.step++;
                 sfx.step.play();
@@ -2231,7 +2245,7 @@
         // Simulação de Submissão Backend
         btnFinish.addEventListener('click', async () => {
             // Validação de Segurança contra conflitos de última hora
-            const startDateTime = dateInput.value + 'T' + (state.timeStart || '08:00') + ':00';
+            const startDateTime = dateInput.value + 'T' + (state.timeStart || '07:30') + ':00';
             const endDateTime = dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00';
             const newStart = new Date(startDateTime).getTime();
             const newEnd = new Date(endDateTime).getTime();
@@ -2251,7 +2265,7 @@
                 requester: empName.value,
                 area: empArea.value,
                 description: taskDesc.value,
-                start: dateInput.value + 'T' + (state.timeStart || '08:00') + ':00',
+                start: dateInput.value + 'T' + (state.timeStart || '07:30') + ':00',
                 end: dateInput.value + 'T' + (state.timeEnd || '17:00') + ':00',
                 backgroundColor: '#3f3f46'
             };
@@ -2377,9 +2391,11 @@
                 const hours = (end - start) / (1000 * 60 * 60);
                 totalHours += hours;
 
-                // Lógica Simples: Fim de semana ou fora de 08:00-17:00 = Extra
+                // Lógica Simples: Fim de semana ou fora de 07:30-17:00 = Extra
                 const isWeekend = start.getDay() === 0 || start.getDay() === 6;
-                const isOutsideClassic = start.getHours() < 8 || end.getHours() > 17;
+                const startHour = start.getHours() + start.getMinutes() / 60;
+                const endHour = end.getHours() + end.getMinutes() / 60;
+                const isOutsideClassic = startHour < 7.5 || endHour > 17;
                 if (isWeekend || isOutsideClassic) extraHours += hours;
                 else normalHours += hours;
 
@@ -2605,6 +2621,13 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex', 'animate-wind-out');
             }, 600);
+        }
+
+        window.handleEmergencyLink = function() {
+            closeObservationModal();
+            setTimeout(() => {
+                showEmergencyModal();
+            }, 650);
         }
     </script>
 </body>
