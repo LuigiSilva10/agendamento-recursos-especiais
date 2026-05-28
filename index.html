@@ -390,6 +390,7 @@
                 <!-- Sub-menu do Dashboard -->
                 <div class="flex items-center gap-2 border-b border-zinc-800 pb-4 overflow-x-auto no-scrollbar">
                     <button onclick="switchDashTab(event, 'overview')" class="dash-tab-btn active px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all bg-zinc-800 text-zinc-100">Visão Geral</button>
+                    <button onclick="switchDashTab(event, 'customize')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Personalizar</button>
                     <button onclick="switchDashTab(event, 'settings')" class="dash-tab-btn px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all text-zinc-500 hover:text-zinc-300">Configurações</button>
                 </div>
 
@@ -477,6 +478,13 @@
                 </div>
             </div>
 
+                <!-- ABA 2: Customização de Recursos -->
+                <div id="dash-customize" class="dash-sub-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="custom-eqp-editor">
+                        <!-- Cards de edição gerados via JS -->
+                    </div>
+                </div>
+
             <!-- ABA 3: Configurações -->
                 <div id="dash-settings" class="dash-sub-content hidden space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -560,23 +568,28 @@
             <div class="bg-zinc-900 w-full min-h-full flex flex-col p-4 md:p-10">
                 <div class="max-w-[1600px] w-full mx-auto flex-1 flex flex-col">
                 <!-- Cabeçalho (Passos e Barras de Progresso) -->
-                <div class="mb-3 md:mb-6 flex flex-col gap-2 md:gap-6 shrink-0">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
-                        <div class="flex-1">
-                            <p class="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">Progresso: <span id="current-step-text">1</span> de 5</p>
-                            <div class="w-full bg-zinc-950 rounded-full h-1.5">
-                                <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 20%"></div>
+                <div class="mb-6 md:mb-14 flex flex-col gap-4 md:gap-8 shrink-0 px-1">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex-1 space-y-4">
+                            <!-- Superior: Badge de Passo e Breadcrumbs -->
+                            <div class="flex items-center gap-4">
+                                <span id="hud-badge" class="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm shadow-emerald-500/5">Passo 1</span>
+                                <div id="hud-breadcrumbs" class="flex items-center gap-2 text-[10px] font-bold text-zinc-600 uppercase tracking-widest min-h-[1rem]"></div>
+                            </div>
+
+                            <!-- Título Dinâmico -->
+                            <div class="space-y-1">
+                                <h3 id="step-title" class="text-3xl md:text-5xl font-black text-zinc-100 tracking-tighter leading-tight transition-all duration-300">Qual recurso você precisa?</h3>
+                                <p id="step-desc" class="text-zinc-500 text-sm md:text-lg font-medium max-w-2xl">Selecione uma das opções abaixo para iniciar o agendamento.</p>
+                            </div>
+
+                            <!-- Progress Bar Minimalista -->
+                            <div class="w-full max-w-md bg-zinc-950 rounded-full h-1 overflow-hidden">
+                                <div id="progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-700 shadow-[0_0_15px_rgba(16,185,129,0.4)]" style="width: 20%"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- HUD Global de Títulos -->
-                    <div class="text-left shrink-0 px-2 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h3 id="step-title" class="text-lg md:text-2xl font-bold text-zinc-100 mb-0.5">Qual recurso você precisa?</h3>
-                            <p id="step-desc" class="text-zinc-400 text-sm">Selecione uma das opções abaixo para iniciar o agendamento.</p>
-                        </div>
-                        <div id="emergency-btn-container" class="flex flex-wrap gap-2 shrink-0 items-center">
+
+                        <div id="emergency-btn-container" class="flex flex-wrap gap-2 shrink-0 items-center self-start md:self-center">
                             <button id="btn-emergency-global" onclick="showEmergencyModal()" class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-xl text-xs font-bold uppercase transition-all border border-red-500/20">
                                 <i class="ph-bold ph-warning-octagon text-base"></i> Emergencial
                             </button>
@@ -724,8 +737,8 @@
                 </div>
 
                 <div id="wizard-footer" class="mt-4 md:mt-auto pt-4 md:pt-6 2xl:pt-12 2xl:pb-12 border-t border-zinc-800 flex items-center justify-between gap-2 md:gap-4 shrink-0 px-1 pb-20 sm:pb-4">
-                    <button id="btn-prev" class="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-xs uppercase text-zinc-400 hover:bg-zinc-800 transition-all invisible">
-                        <i class="ph ph-arrow-left"></i> Voltar
+                    <button id="btn-prev" class="flex items-center gap-2 md:gap-3 px-8 md:px-12 py-3 md:py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl md:rounded-2xl font-black text-xs uppercase transition-all shadow-xl active:scale-95 invisible">
+                        <i class="ph-bold ph-arrow-left text-base"></i> Voltar
                     </button>
                     
                     <div class="flex items-center gap-2">
@@ -805,6 +818,37 @@
         </div>
     </div>
 
+    <!-- Modal de Informações Técnicas do Recurso -->
+    <div id="resourceInfoModal" class="hidden fixed inset-0 z-[160] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 text-center">
+                <div id="infoModalIcon" class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 text-white shadow-lg bg-emerald-500 rotate-3">
+                    <i class="ph-fill ph-info text-4xl"></i>
+                </div>
+                <h3 id="infoModalTitle" class="text-2xl font-black text-white mb-6 uppercase tracking-tighter">Especificações</h3>
+                <div class="space-y-3 mb-8">
+                    <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center text-left">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Marca</span>
+                        <span id="infoModalBrand" class="text-white font-bold">--</span>
+                    </div>
+                    <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center text-left">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Modelo</span>
+                        <span id="infoModalModel" class="text-white font-bold text-right ml-4">--</span>
+                    </div>
+                    <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center text-left">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Nº Série</span>
+                        <span id="infoModalSerial" class="text-white font-bold">--</span>
+                    </div>
+                    <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 flex justify-between items-center text-left">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Tamanho</span>
+                        <span id="infoModalSize" class="text-white font-bold">--</span>
+                    </div>
+                </div>
+                <button onclick="closeResourceInfo()" class="w-full py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-sm uppercase transition-all">Fechar Detalhes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Detalhes da Reserva (Acionado pelos Pins) -->
     <div id="resDetailModal" class="hidden fixed inset-0 z-[130] items-center justify-center bg-black/80 backdrop-blur-md p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300">
@@ -829,6 +873,60 @@
                     </div>
                 </div>
                 <button onclick="closeResDetail()" class="w-full py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold text-sm uppercase transition-all">Fechar Detalhes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Reserva (Dashboard) -->
+    <div id="reservationEditModal" class="hidden fixed inset-0 z-[160] items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-2xl font-black text-white uppercase tracking-tighter">Editar Agendamento</h3>
+                    <button onclick="closeEditReservation()" class="text-zinc-500 hover:text-white"><i class="ph-bold ph-x text-2xl"></i></button>
+                </div>
+                
+                <input type="hidden" id="edit-res-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Solicitante</label>
+                        <input id="edit-res-name" type="text" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Área</label>
+                        <select id="edit-res-area" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500 appearance-none">
+                            <option value="1A">Área 1A</option><option value="1B">Área 1B</option><option value="2">Área 2</option><option value="3">Área 3</option><option value="4">Área 4</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Equipamento</label>
+                        <select id="edit-res-eqp" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500 appearance-none">
+                            <option value="pta1">PTA 1</option><option value="pta2">PTA 2</option><option value="munck">Munck</option><option value="guindaste">Guindaste</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Data</label>
+                        <input id="edit-res-date" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Início</label>
+                        <input id="edit-res-start" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Fim</label>
+                        <input id="edit-res-end" type="time" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+                    <div class="space-y-1 md:col-span-2">
+                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Descrição da Atividade</label>
+                        <textarea id="edit-res-desc" rows="3" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-orange-500 resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeEditReservation()" class="flex-1 py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs uppercase transition-all">Cancelar</button>
+                    <button onclick="saveReservationEdit()" class="flex-1 py-4 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs uppercase shadow-lg shadow-orange-500/20 transition-all">Salvar Alterações</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1133,7 +1231,8 @@
             const startTime = performance.now();
             const results = await queryTurso([
                 "SELECT * FROM reservations", 
-                "SELECT value FROM settings WHERE key = 'password'"
+                "SELECT value FROM settings WHERE key = 'password'",
+                "SELECT value FROM settings WHERE key = 'resources_config'"
             ]);
             const endTime = performance.now();
             
@@ -1156,6 +1255,25 @@
                 if (results[1] && results[1].response && results[1].response.result.rows.length > 0) {
                     const passRow = results[1].response.result.rows[0][0];
                     appConfig.password = passRow.value !== undefined ? passRow.value : passRow;
+                }
+
+                // Atualiza Configuração dos Equipamentos (incluindo fotos persistidas)
+                if (results[2] && results[2].response && results[2].response.result.rows.length > 0) {
+                    const configRow = results[2].response.result.rows[0][0];
+                    const configVal = configRow.value !== undefined ? configRow.value : configRow;
+                    if (configVal) {
+                        try {
+                            const savedEqps = JSON.parse(configVal);
+                            equipments = savedEqps;
+                            
+                            // Força a disponibilidade da PTA 2 (limpando estado legado do banco de dados)
+                            const pta2 = equipments.find(e => e.id === 'pta2');
+                            if (pta2) {
+                                delete pta2.unavailable;
+                                pta2.advance = false; // Garante que seja igual à PTA 1
+                            }
+                        } catch(e) { console.warn("Erro ao restaurar fotos dos recursos:", e); }
+                    }
                 }
 
                 if(statusLabel) statusLabel.textContent = "Ativo";
@@ -1307,11 +1425,155 @@
 
             if(tabId === 'overview') {
                 initCharts();
+            } else if(tabId === 'customize') {
+                renderCustomizationEditor();
             } else if(tabId === 'settings') {
                 renderSettingsEqp();
                 renderActiveReservationsSettings();
             }
             applyConfigUI(); // Garante que os toggles estejam na posição correta
+        };
+
+        window.saveResourceCustomization = async function(id, title, fleet, image, model, serial, size, brand) {
+            const eqp = equipments.find(e => e.id === id);
+            if(eqp) {
+                eqp.customTitle = title;
+                eqp.customFleet = fleet;
+                eqp.customImage = image;
+                eqp.model = model;
+                eqp.serialNumber = serial;
+                eqp.size = size;
+                eqp.brand = brand;
+            }
+            const sql = `INSERT OR REPLACE INTO settings (key, value) VALUES ('resources_config', '${JSON.stringify(equipments).replace(/'/g, "''")}')`;
+            const result = await queryTurso([sql]);
+            if(result) {
+                showToast('Sucesso', 'Aparência do equipamento atualizada!');
+                renderEquipments();
+                renderCustomizationEditor();
+            }
+        };
+
+        function renderCustomizationEditor() {
+            const container = document.getElementById('custom-eqp-editor');
+            if(!container) return;
+            container.innerHTML = equipments.map(eqp => `
+                <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-[2rem] space-y-4">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><i class="ph-bold ${eqp.icon}"></i></div>
+                        <span class="text-[10px] font-black uppercase text-white">ID: ${eqp.id}</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">Nome</label>
+                                <input id="edit-title-${eqp.id}" type="text" value="${eqp.customTitle || eqp.name}" placeholder="Ex: PTA 01" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">${eqp.id === 'munck' ? 'Placa' : 'Frota'}</label>
+                                <input id="edit-fleet-${eqp.id}" type="text" value="${eqp.customFleet || ''}" placeholder="${eqp.id === 'munck' ? 'Ex: ABC-1234' : 'Ex: H-123'}" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">Marca</label>
+                                <input id="edit-brand-${eqp.id}" type="text" value="${eqp.brand || ''}" placeholder="Ex: JLG" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">Modelo</label>
+                                <input id="edit-model-${eqp.id}" type="text" value="${eqp.model || ''}" placeholder="Ex: 1234-X" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">Nº Série</label>
+                                <input id="edit-serial-${eqp.id}" type="text" value="${eqp.serialNumber || ''}" placeholder="Ex: SN999" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black uppercase text-white ml-1">Tamanho (m)</label>
+                                <input id="edit-size-${eqp.id}" type="text" value="${eqp.size || ''}" placeholder="Ex: 12m" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black uppercase text-white ml-1">Foto do Recurso</label>
+                            <div class="relative group h-32 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 transition-all hover:border-emerald-500">
+                                <img id="preview-${eqp.id}" src="${eqp.customImage || 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=800&auto=format&fit=crop'}" 
+                                     class="w-full h-full object-cover transition-all duration-700 ${eqp.customImage ? 'opacity-100' : 'opacity-60'}">
+                                <div class="absolute inset-0 flex flex-col items-center justify-center gap-1 group-hover:bg-black/40 transition-all">
+                                    <i class="ph-bold ph-cloud-arrow-up text-2xl text-zinc-400 group-hover:text-emerald-500 transition-colors"></i>
+                                    <span class="text-[8px] font-black uppercase text-white group-hover:text-white">Carregar Foto</span>
+                                </div>
+                                <button type="button" onclick="event.stopPropagation(); removeResourceImage('${eqp.id}')" 
+                                        id="remove-btn-${eqp.id}"
+                                        class="absolute top-2 right-2 z-20 w-8 h-8 bg-red-500/80 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-all ${eqp.customImage ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(event, '${eqp.id}')" class="absolute inset-0 opacity-0 cursor-pointer">
+                                <input type="hidden" id="edit-image-val-${eqp.id}" value="${eqp.customImage || ''}">
+                            </div>
+                        </div>
+
+                        <button onclick="saveResourceCustomization('${eqp.id}', 
+                            document.getElementById('edit-title-${eqp.id}').value, 
+                            document.getElementById('edit-fleet-${eqp.id}').value, 
+                            document.getElementById('edit-image-val-${eqp.id}').value,
+                            document.getElementById('edit-model-${eqp.id}').value,
+                            document.getElementById('edit-serial-${eqp.id}').value,
+                            document.getElementById('edit-size-${eqp.id}').value,
+                            document.getElementById('edit-brand-${eqp.id}').value)" 
+                            class="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl text-[10px] font-black uppercase text-white transition-all shadow-lg shadow-emerald-500/10">
+                            Atualizar Card
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.handleImageUpload = function(event, eqpId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 1 * 1024 * 1024) {
+                showToast('Aviso', 'A imagem é muito pesada. Tente uma menor que 1MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                const hiddenInput = document.getElementById(`edit-image-val-${eqpId}`);
+                const previewImg = document.getElementById(`preview-${eqpId}`);
+                const removeBtn = document.getElementById(`remove-btn-${eqpId}`);
+                if (hiddenInput) hiddenInput.value = base64Image;
+                if (previewImg) {
+                    previewImg.src = base64Image;
+                    previewImg.classList.remove('opacity-60');
+                    previewImg.classList.add('opacity-100');
+                }
+                if (removeBtn) {
+                    removeBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    removeBtn.classList.add('opacity-100');
+                }
+                sfx.success.play();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.removeResourceImage = function(eqpId) {
+            const hiddenInput = document.getElementById(`edit-image-val-${eqpId}`);
+            const previewImg = document.getElementById(`preview-${eqpId}`);
+            const removeBtn = document.getElementById(`remove-btn-${eqpId}`);
+            
+            if (hiddenInput) hiddenInput.value = '';
+            if (previewImg) {
+                previewImg.src = 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=800&auto=format&fit=crop';
+                previewImg.classList.remove('opacity-100');
+                previewImg.classList.add('opacity-60');
+            }
+            if (removeBtn) {
+                removeBtn.classList.remove('opacity-100');
+                removeBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+            sfx.pop.play();
         };
 
         function initSettings() {
@@ -1371,24 +1633,31 @@
                 const colorBase = eqp ? eqp.color : 'zinc';
 
                 return `
-                    <div class="group relative aspect-[1.4/1] sm:aspect-square flex flex-col items-center justify-center p-2 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-zinc-800 bg-zinc-950 transition-all">
-                        <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-0.5 sm:mb-4 flex items-center justify-center bg-${colorBase}-500/10 text-${colorBase}-500 transition-all">
-                            <i class="ph-bold ${eqp ? eqp.icon : 'ph-question'} text-3xl"></i>
-                        </div>
-                        
-                        <div class="text-center z-10 w-full sm:mb-6">
-                            <span class="block text-[10px] sm:text-xl font-black tracking-tight text-white mb-0 sm:mb-1 line-clamp-1">${res.requester}</span>
-                            <span class="block text-[8px] sm:text-[10px] text-zinc-500 font-black uppercase tracking-widest sm:tracking-[0.2em] sm:mb-4 truncate">${eqp ? eqp.name : 'Recurso'} • ÁREA ${res.area}</span>
+                    <div class="group relative aspect-square flex flex-col items-center justify-between p-3 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-zinc-800 bg-zinc-950 transition-all overflow-y-auto no-scrollbar">
+                        <div class="flex flex-col items-center w-full">
+                            <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-2 sm:mb-4 flex items-center justify-center bg-${colorBase}-500/10 text-${colorBase}-500 transition-all shrink-0">
+                                <i class="ph-bold ${eqp ? eqp.icon : 'ph-question'} text-xl sm:text-3xl"></i>
+                            </div>
+                            
+                            <div class="text-center z-10 w-full mb-2 sm:mb-4">
+                                <span class="block text-[11px] sm:text-lg font-black tracking-tight text-white line-clamp-2 h-7 sm:h-14 mb-1">${res.requester}</span>
+                                <span class="block text-[9px] sm:text-[10px] text-zinc-500 font-black uppercase tracking-widest sm:tracking-[0.2em] truncate">${eqp ? eqp.name : 'Recurso'} • ÁREA ${res.area}</span>
+                            </div>
 
-                            <div class="flex flex-col gap-0.5 items-center bg-zinc-900/50 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-800">
+                            <div class="w-full flex flex-col gap-0.5 items-center bg-zinc-900/50 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-zinc-800 shrink-0">
                                 <span class="text-zinc-100 text-[10px] font-bold">${dateStr}</span>
                                 <span class="text-emerald-500 text-[10px] font-black uppercase tracking-widest">${timeStr}</span>
                             </div>
                         </div>
 
-                        <button onclick="requestDeleteReservation(${res.id})" class="w-full py-2 sm:py-4 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase transition-all border border-red-500/20 shadow-lg hover:shadow-red-500/20">
-                            <i class="ph-bold ph-trash"></i> Liberar Recurso
-                        </button>
+                        <div class="w-full flex flex-col gap-2 mt-4 shrink-0">
+                            <button onclick="openEditReservation(${res.id})" class="w-full py-2 sm:py-3 bg-orange-600/10 hover:bg-orange-600 text-orange-500 hover:text-white rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase transition-all border border-orange-500/20 shadow-lg hover:shadow-orange-500/20">
+                                <i class="ph-bold ph-pencil-simple"></i> Editar Reserva
+                            </button>
+                            <button onclick="requestDeleteReservation(${res.id})" class="w-full py-2 sm:py-3 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl sm:rounded-2xl text-[8px] sm:text-[10px] font-black uppercase transition-all border border-red-500/20 shadow-lg hover:shadow-red-500/20">
+                                <i class="ph-bold ph-trash"></i> Liberar Recurso
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1430,6 +1699,56 @@
             }
         };
 
+        window.openEditReservation = function(id) {
+            const res = reservations.find(r => r.id == id);
+            if (!res) return;
+
+            document.getElementById('edit-res-id').value = res.id;
+            document.getElementById('edit-res-name').value = res.requester;
+            document.getElementById('edit-res-area').value = res.area;
+            document.getElementById('edit-res-desc').value = res.description;
+            document.getElementById('edit-res-eqp').value = res.resourceId;
+            
+            const start = new Date(res.start);
+            const end = new Date(res.end);
+            
+            document.getElementById('edit-res-date').value = res.start.split('T')[0];
+            document.getElementById('edit-res-start').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
+            document.getElementById('edit-res-end').value = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+            const modal = document.getElementById('reservationEditModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            sfx.pop.play();
+        };
+
+        window.closeEditReservation = function() {
+            document.getElementById('reservationEditModal').classList.add('hidden');
+            document.getElementById('reservationEditModal').classList.remove('flex');
+            sfx.click.play();
+        };
+
+        window.saveReservationEdit = async function() {
+            const id = document.getElementById('edit-res-id').value;
+            const name = document.getElementById('edit-res-name').value;
+            const area = document.getElementById('edit-res-area').value;
+            const desc = document.getElementById('edit-res-desc').value;
+            const eqpId = document.getElementById('edit-res-eqp').value;
+            const date = document.getElementById('edit-res-date').value;
+            const start = document.getElementById('edit-res-start').value;
+            const end = document.getElementById('edit-res-end').value;
+
+            const sql = `UPDATE reservations SET requester='${name.replace(/'/g, "''")}', area='${area}', description='${desc.replace(/'/g, "''")}', resourceId='${eqpId}', start='${date}T${start}:00', end='${date}T${end}:00' WHERE id=${id}`;
+            const result = await queryTurso([sql]);
+            
+            if (result) {
+                showToast('Sucesso', 'Agendamento atualizado com sucesso!');
+                await fetchReservations();
+                renderActiveReservationsSettings();
+                closeEditReservation();
+            }
+        };
+
         window.updateConfig = function(type) {
             if(type === 'password') {
                 const newPass = document.getElementById('config-new-pass').value;
@@ -1440,6 +1759,7 @@
                 queryTurso([sql]).then(res => {
                     if(res) {
                         appConfig.password = newPass;
+                        localStorage.setItem('saved_dash_pass', newPass); // Mantém o usuário atual logado com a nova senha
                         showToast('Sucesso', 'Senha salva permanentemente');
                     }
                 });
@@ -1662,8 +1982,8 @@
 
                 // Estilização baseada no design dos cards de equipamentos
                 const cardClasses = isSelected
-                    ? `bg-zinc-900 border-${color}-500 shadow-2xl ring-4 ring-${color}-500/10 scale-[1.02]`
-                    : `bg-zinc-900/40 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/80 hover:scale-[1.02]`;
+                    ? `bg-zinc-900 border-${color}-500 shadow-2xl`
+                    : `bg-zinc-900/40 border-zinc-800 hover:border-${color}-500 hover:bg-zinc-900/80`;
 
                 const iconClasses = isSelected
                     ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/40 scale-110 rotate-3`
@@ -1834,6 +2154,27 @@
 
         window.closeResDetail = () => document.getElementById('resDetailModal').classList.add('hidden');
 
+        window.showResourceInfo = function(id) {
+            const eqp = equipments.find(e => e.id === id);
+            if (!eqp) return;
+
+            document.getElementById('infoModalBrand').textContent = eqp.brand || 'Não informado';
+            document.getElementById('infoModalModel').textContent = eqp.model || 'Não informado';
+            document.getElementById('infoModalSerial').textContent = eqp.serialNumber || 'Não informado';
+            document.getElementById('infoModalSize').textContent = eqp.size || 'Não informado';
+            
+            const modal = document.getElementById('resourceInfoModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            sfx.pop.play();
+        };
+
+        window.closeResourceInfo = function() {
+            document.getElementById('resourceInfoModal').classList.add('hidden');
+            document.getElementById('resourceInfoModal').classList.remove('flex');
+            sfx.click.play();
+        };
+
         // Estado da Agenda Geral
         let generalAgendaView = {
             month: new Date().getMonth(),
@@ -1993,15 +2334,18 @@
                     if (content.id === target) {
                         content.classList.add('active');
                         // Se abrir o dashboard e estiver desbloqueado, atualiza
-                        if(target === 'tab-dashboard') {
-                            if (!document.getElementById('dashboard-content').classList.contains('hidden')) {
-                                initCharts();
-                            }
-                            // Foco automático no input de senha
-                            setTimeout(() => {
-                                document.getElementById('dash-pass').focus();
-                            }, 100);
+                    if (target === 'tab-dashboard') {
+                        const savedPass = localStorage.getItem('saved_dash_pass');
+                        if (savedPass === appConfig.password) {
+                            document.getElementById('dashboard-lock').classList.add('hidden');
+                            document.getElementById('dashboard-content').classList.remove('hidden');
+                            initCharts();
+                        } else {
+                            document.getElementById('dashboard-lock').classList.remove('hidden');
+                            document.getElementById('dashboard-content').classList.add('hidden');
+                            setTimeout(() => document.getElementById('dash-pass').focus(), 100);
                         }
+                    }
                     }
                 });
             });
@@ -2010,9 +2354,9 @@
         // -----------------------
         // Estrutura de Lógica do Wizard
         // -----------------------
-        const equipments = [
+        let equipments = [
             { id: 'pta1', name: 'PTA 1', icon: 'ph-elevator', advance: false, color: 'emerald' },
-            { id: 'pta2', name: 'PTA 2', icon: 'ph-elevator', advance: false, color: 'sky', unavailable: true },
+            { id: 'pta2', name: 'PTA 2', icon: 'ph-elevator', advance: false, color: 'sky' },
             { id: 'munck', name: 'Munck', icon: 'ph-truck', advance: false, color: 'orange' },
             { id: 'guindaste', name: 'Guindaste', icon: 'ph-crane', advance: true, color: 'indigo' },
         ];
@@ -2038,7 +2382,7 @@
         const btnNext = document.getElementById('btn-next');
         const btnPrev = document.getElementById('btn-prev');
         const btnFinish = document.getElementById('btn-finish');
-        const stepTexts = document.getElementById('current-step-text');
+        const stepTexts = document.getElementById('hud-badge');
         const progressBar = document.getElementById('progress-bar');
 
         // Configuração inicial de data
@@ -2061,55 +2405,64 @@
             eqpGrid.innerHTML = equipments.map(eqp => {
                 const isSelected = state.eqp === eqp.id;
                 const isUnavailable = eqp.unavailable === true;
-
-                // Lógica de Configuração Dinâmica
                 const hasAdvance = appConfig.eqpSettings[eqp.id] ? appConfig.eqpSettings[eqp.id].advance : eqp.advance;
 
-                const vividColor = {
-                    emerald: 'bg-emerald-500',
-                    sky: 'bg-sky-500',
-                    orange: 'bg-orange-500',
-                    indigo: 'bg-indigo-500'
-                }[eqp.color];
+                const displayTitle = eqp.customTitle || eqp.name;
+                        const displayFleet = eqp.customFleet || (eqp.id === 'munck' ? 'Placa' : 'Recurso');
+                const displayImage = eqp.customImage || 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=800&auto=format&fit=crop';
 
                 const borderGlow = isSelected ? {
-                    emerald: 'border-emerald-500/50 shadow-emerald-500/20 ring-emerald-500/10',
-                    sky: 'border-sky-500/50 shadow-sky-500/20 ring-sky-500/10',
-                    orange: 'border-orange-500/50 shadow-orange-500/20 ring-orange-500/10',
-                    indigo: 'border-indigo-500/50 shadow-indigo-500/20 ring-indigo-500/10'
-                }[eqp.color] : '';
+                    emerald: 'border-emerald-500 shadow-emerald-500/20',
+                    sky: 'border-sky-500 shadow-sky-500/20',
+                    orange: 'border-orange-500 shadow-orange-500/20',
+                    indigo: 'border-indigo-500 shadow-indigo-500/20'
+                }[eqp.color] : 'border-zinc-800';
+
+                const hoverBorder = {
+                    emerald: 'hover:border-emerald-500',
+                    sky: 'hover:border-sky-500',
+                    orange: 'hover:border-orange-500',
+                    indigo: 'hover:border-indigo-500'
+                }[eqp.color];
 
                 return `
                     <button type="button"
                         ${isUnavailable ? '' : `onclick="selectEqp('${eqp.id}')"`}
-                        class="group relative aspect-[1.4/1] sm:aspect-square flex flex-col items-center justify-center p-2 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border-2 text-center transition-all duration-200 overflow-hidden
-                        ${isUnavailable ? 'bg-zinc-800 border-zinc-700 grayscale opacity-60 cursor-not-allowed' : 
-                          (isSelected ? `bg-zinc-900 ${borderGlow} scale-[1.02] shadow-2xl ring-4` : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-600 hover:bg-zinc-900/80 hover:scale-[1.02] hover:shadow-[inset_0_4px_20px_rgba(0,0,0,0.6)] active:scale-95')}">
+                        class="group relative flex flex-col aspect-[0.85/1] sm:aspect-square rounded-[1.5rem] sm:rounded-[2rem] border-2 text-center transition-all duration-300 overflow-hidden p-0
+                        ${isUnavailable ? 'bg-zinc-800 grayscale opacity-60 cursor-not-allowed' : 
+                          (isSelected ? `bg-zinc-900 ${borderGlow} shadow-2xl` : `bg-zinc-950/40 border-zinc-800 ${hoverBorder} hover:bg-zinc-900/80 active:scale-95`)}">
                         
-                        ${isUnavailable ? '<div class="reserved-ribbon">Indisponivel</div>' : ''}
-                        ${isSelected && !isUnavailable ? '<div class="shine-element"></div>' : ''}
+                        <div class="h-1/2 w-full overflow-hidden relative">
+                             <img src="${displayImage}" class="w-full h-full object-cover transition-transform duration-700" alt="${displayFleet}">
+                             <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent"></div>
+                             ${isUnavailable ? '<div class="absolute inset-0 bg-zinc-950/60 flex items-center justify-center font-black uppercase text-[10px] tracking-widest text-white">Indisponível</div>' : ''}
+                             ${isSelected && !isUnavailable ? '<div class="shine-element"></div>' : ''}
+                        </div>
 
-                        <div class="w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl mb-0.5 sm:mb-4 flex items-center justify-center ${isSelected && !isUnavailable ? vividColor + ' text-white shadow-lg shadow-' + eqp.color + '-500/40 scale-110 rotate-3' : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300'} transition-all duration-500 ease-out">
-                            <i class="ph ${eqp.icon} text-3xl"></i>
+                        <div onclick="event.stopPropagation(); showResourceInfo('${eqp.id}')" 
+                             class="absolute top-2 left-2 w-10 h-10 bg-zinc-900/90 text-white rounded-full flex items-center justify-center border border-zinc-800 transition-all z-30 cursor-pointer">
+                            <i class="ph-bold ph-question text-xl"></i>
                         </div>
-                        
-                        <div class="z-10 w-full">
-                            <span class="block text-[10px] sm:text-xl font-black tracking-tight ${isSelected && !isUnavailable ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-200'} transition-colors duration-500">${eqp.name}</span>
-                            ${isUnavailable ? '' : (hasAdvance
-                                ? `<div class="mt-0.5 px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/30 inline-flex items-center gap-1">
-                                     <i class="ph-fill ph-clock-counter-clockwise text-orange-500 text-[10px]"></i>
-                                     <span class="text-[9px] text-orange-500 uppercase tracking-wide font-black block">Mín. 1 dia antecedência</span>
+
+                        <div class="h-1/2 w-full p-2 sm:p-4 flex flex-col items-center justify-center gap-0.5 sm:gap-1">
+                             <span class="text-sm sm:text-2xl font-black text-white uppercase tracking-tighter leading-none mb-1">${displayTitle}</span>
+                             <span class="text-[8px] sm:text-[10px] font-black text-white uppercase tracking-[0.2em]">${displayFleet}</span>
+                             
+                             ${isUnavailable ? '' : (hasAdvance
+                                ? `<div class="px-2 py-0.5 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center gap-1">
+                                     <i class="ph-fill ph-clock-counter-clockwise text-orange-500 text-[8px]"></i>
+                                     <span class="text-[8px] text-white uppercase font-black">Antecedência</span>
                                    </div>` 
-                                : `<div class="mt-0.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1">
-                                     <i class="ph-fill ph-bolt text-emerald-500 text-[10px]"></i>
-                                     <span class="text-[9px] text-emerald-500 uppercase tracking-wide font-black block">Reserva Imediata</span>
+                                : `<div class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1">
+                                     <i class="ph-fill ph-bolt text-emerald-500 text-[8px]"></i>
+                                     <span class="text-[8px] text-emerald-500 uppercase font-black">Imediato</span>
                                    </div>`)
-                            }
+                             }
                         </div>
-                        
+
                         ${isSelected && !isUnavailable ? `
-                            <div class="absolute -top-2 -right-2 w-12 h-12 bg-emerald-500 rounded-bl-[2rem] flex items-center justify-center border-t-2 border-r-2 border-white/20">
-                                <i class="ph-bold ph-check text-white text-sm"></i>
+                            <div class="absolute top-2 right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-zinc-600/50 shadow-lg">
+                                <i class="ph-bold ph-check text-white text-xs"></i>
                             </div>
                         ` : ''}
                     </button>
@@ -2184,8 +2537,32 @@
                 renderTimeCards();
             }
             
-            stepTexts.textContent = state.step;
+            stepTexts.textContent = `Passo ${state.step}`;
             progressBar.style.width = `${(state.step / 5) * 100}%`;
+
+            // Atualizar Breadcrumbs no HUD para usabilidade
+            const crumbs = [];
+            if (state.step > 1 && state.eqp) {
+                const e = equipments.find(x => x.id === state.eqp);
+                crumbs.push(e ? (e.customTitle || e.name) : '');
+            }
+            if (state.step > 2 && state.date) {
+                const [y,m,d] = state.date.split('-');
+                crumbs.push(`${d}/${m}`);
+            }
+            if (state.step > 3 && state.timeStart) {
+                if (state.isCustomTime) crumbs.push('Custom');
+                else if (state.timeStart === '07:30' && state.timeEnd === '11:30') crumbs.push('Manhã');
+                else if (state.timeStart === '13:00' && state.timeEnd === '17:00') crumbs.push('Tarde');
+                else crumbs.push('Integral');
+            }
+            const breadcrumbsEl = document.getElementById('hud-breadcrumbs');
+            if (breadcrumbsEl) {
+                breadcrumbsEl.innerHTML = crumbs.map((c, i) => `
+                    <span class="text-zinc-100">${c}</span>
+                    ${i < crumbs.length - 1 ? '<i class="ph ph-caret-right text-zinc-800 text-[8px]"></i>' : ''}
+                `).join('');
+            }
             
             btnPrev.classList.toggle('invisible', state.step === 1);
             
@@ -2309,7 +2686,7 @@
 
             // Salva no banco de dados real
             btnFinish.disabled = true;
-            btnFinish.textContent = "Processando...";
+            btnFinish.innerHTML = `Processando... <i class="ph-bold ph-circle-notch animate-spin"></i>`;
             
             const success = await saveToTurso(newReservation);
             
@@ -2580,6 +2957,7 @@
             // Senha padrão para acesso aos indicadores
             if (passInput.value === appConfig.password) {
                 dashPasswordAttempts = 0;
+                localStorage.setItem('saved_dash_pass', passInput.value); // Salva para acessos futuros
                 // Inicia transição de luxo
                 welcomeGreeting.textContent = getGreeting();
                 welcomeOverlay.classList.remove('hidden');
