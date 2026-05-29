@@ -505,7 +505,13 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-black uppercase text-zinc-500 ml-1">Filtrar por Data</label>
-                            <input type="date" id="history-filter-date" onchange="renderHistory()" class="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-emerald-500/50 transition-colors">
+                            <div class="relative">
+                                <i class="ph ph-calendar-blank absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 z-10"></i>
+                                <input type="text" id="history-filter-date" placeholder="Selecionar data..." class="w-full bg-zinc-950 border border-zinc-800/80 rounded-xl pl-11 pr-10 py-3 text-xs text-white outline-none focus:border-emerald-500/50 transition-all cursor-pointer">
+                                <button type="button" id="clear-history-date" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors hidden" onclick="clearHistoryDate()">
+                                    <i class="ph ph-x-circle text-xl"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="md:col-span-2 flex items-end">
                             <button onclick="clearHistoryFilters()" class="px-6 py-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
@@ -2945,9 +2951,30 @@
         // ------------------
         // Lógica de Histórico Profissional
         // ------------------
+        let historyDateInstance;
+
+        // Inicializa o Flatpickr para o filtro de histórico
+        document.addEventListener('DOMContentLoaded', () => {
+            historyDateInstance = flatpickr("#history-filter-date", {
+                locale: "pt",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                disableMobile: "true",
+                onChange: function(selectedDates, dateStr) {
+                    renderHistory();
+                    const clearBtn = document.getElementById('clear-history-date');
+                    if (clearBtn) clearBtn.classList.toggle('hidden', !dateStr);
+                }
+            });
+        });
+
         window.clearHistoryFilters = function() {
             document.getElementById('history-search-name').value = '';
-            document.getElementById('history-filter-date').value = '';
+            if (historyDateInstance) historyDateInstance.clear();
+            
+            const clearBtn = document.getElementById('clear-history-date');
+            if (clearBtn) clearBtn.classList.add('hidden');
             renderHistory();
             sfx.click.play();
         };
@@ -2989,7 +3016,7 @@
                 const bgColorClass = eqp ? `bg-${eqp.color}-500/10` : 'bg-zinc-800';
 
                 return `
-                    <div class="group flex flex-col md:flex-row items-start md:items-center gap-4 p-5 hover:bg-zinc-800/30 transition-all border-b border-zinc-800/50 last:border-none">
+                    <div class="group flex flex-col md:flex-row items-start md:items-center gap-4 p-5 hover:bg-zinc-800/30 transition-all border-b border-zinc-800/50 last:border-none relative">
                         <div class="flex items-center gap-4 flex-1">
                             <div class="w-12 h-12 rounded-2xl ${bgColorClass} flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
                                 <img src="${eqp && eqp.customImage ? eqp.customImage : 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=800&auto=format&fit=crop'}" class="w-full h-full object-cover rounded-2xl">
@@ -3017,6 +3044,10 @@
                         <div class="hidden md:block w-px h-8 bg-zinc-800/50 mx-2"></div>
                         
                         <p class="text-zinc-500 text-[11px] leading-relaxed italic line-clamp-2 max-w-xs flex-1">${res.description || 'Sem observações adicionais.'}</p>
+
+                        <button onclick="requestDeleteHistoryItem(${res.id})" class="absolute top-4 right-4 md:static md:ml-auto p-2 rounded-full text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100">
+                            <i class="ph-bold ph-trash text-lg"></i>
+                        </button>
                     </div>`;
             }).join('');
         };
@@ -3040,9 +3071,49 @@
             }, 1000);
         });
 
-        // ------------------
-        // Inicialização de Gráficos (Chart.js Vanilla)
-        // ------------------
+        window.clearHistoryDate = function() {
+            if (historyDateInstance) historyDateInstance.clear();
+            document.getElementById('clear-history-date').classList.add('hidden');
+            renderHistory();
+            sfx.click.play();
+        };
+
+        // Variável global para controle de exclusão do histórico
+        let historyItemToDelete = null;
+
+        window.requestDeleteHistoryItem = function(id) {
+            historyItemToDelete = id;
+            const modal = document.getElementById('confirmReleaseModal');
+            const title = modal.querySelector('h3');
+            const message = modal.querySelector('p');
+            const confirmBtn = document.getElementById('btn-execute-release');
+
+            title.textContent = 'Excluir Registro?';
+            message.textContent = 'Esta ação removerá o registro do histórico permanentemente.';
+            confirmBtn.textContent = 'Confirmar Exclusão';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            sfx.pop.play();
+        };
+
+        // Handler único para o botão de confirmação do modal de liberação/exclusão
+        document.getElementById('btn-execute-release').onclick = async () => {
+            const idToDelete = reservationToDelete || historyItemToDelete;
+            if (idToDelete !== null) {
+                const sql = `DELETE FROM reservations WHERE id = ${idToDelete}`;
+                const result = await queryTurso([sql]);
+                closeConfirmReleaseModal();
+                if (result) {
+                    showToast('Sucesso', 'Registro removido com sucesso.');
+                    await fetchReservations();
+                    renderActiveReservationsSettings();
+                    renderHistory();
+                } else {
+                    showToast('Erro', 'Não foi possível remover o registro.');
+                }
+            }
+        };
         function initCharts() {
             if (reservations.length === 0) return;
 
