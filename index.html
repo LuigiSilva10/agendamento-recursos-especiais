@@ -691,6 +691,7 @@
                             <div id="calendar-grid" class="grid grid-cols-7 gap-1">
                                 <!-- Dias gerados via JS -->
                             </div>
+                        </div>
 
                         <input id="date-input" type="hidden" />
                     </div>
@@ -2061,7 +2062,7 @@
 
         function renderTimeCards() {
             const periods = [
-                { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '07:30', end: '11:30', color: 'blue' },
+                { id: 'manha', label: 'Manhã', icon: 'ph-cloud-sun', start: '07:30', end: '11:30', color: 'sky' },
                 { id: 'tarde', label: 'Tarde', icon: 'ph-sun', start: '13:00', end: '17:00', color: 'orange' },
                 { id: 'integral', label: 'Integral', icon: 'ph-calendar-check', start: '07:30', end: '17:00', color: 'emerald' },
                 { id: 'custom', label: 'Personalizado', icon: 'ph-clock-countdown', color: 'emerald' }
@@ -2456,6 +2457,8 @@
         function selectDate(dateStr) {
             state.date = dateStr;
             document.getElementById('date-input').value = dateStr;
+            state.timeStart = ''; state.timeEnd = '';
+            state.isCustomTime = false;
             sfx.click.play();
             renderCalendar();
             validateStep();
@@ -2647,6 +2650,8 @@
 
             sfx.click.play();
             state.date = ''; dateInput.value = '';
+            state.timeStart = ''; state.timeEnd = '';
+            state.isCustomTime = false;
             // Reseta para o mês atual ao mudar de equipamento
             calendarView.month = new Date().getMonth();
             calendarView.year = new Date().getFullYear();
