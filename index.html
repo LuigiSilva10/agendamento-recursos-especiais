@@ -1188,11 +1188,11 @@
         // Função Auxiliar para Rolagem Inteligente
         function autoScrollToActions() {
             setTimeout(() => {
-                const target = document.getElementById('wizard-footer');
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }
-            }, 100);
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 300);
         }
 
         // ------------------
@@ -2891,7 +2891,6 @@
                 btnFinish.classList.remove('flex');
             }
             validateStep();
-            autoScrollToActions();
         }
 
         // Escrever sumário no último passo
